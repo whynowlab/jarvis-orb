@@ -102,7 +102,7 @@ step "Installing Brain Lite"
 mkdir -p "$BRAIN_DIR" "$BRAIN_BIN"
 
 if [ -n "$PIP_CMD" ]; then
-  $PIP_CMD --target "$BRAIN_DIR/lib" aiosqlite websockets >/dev/null 2>&1 && \
+  $PIP_CMD --target "$BRAIN_DIR/lib" aiosqlite websockets mcp >/dev/null 2>&1 && \
     ok "Dependencies installed" || warn "Dependency install failed"
 fi
 
@@ -147,39 +147,20 @@ fi
 # ── Step 3: Claude Code MCP ──
 step "Configuring Claude Code"
 
-CLAUDE_DIR="$HOME/.claude"
-CLAUDE_SETTINGS="$CLAUDE_DIR/settings.json"
-
-if [ -d "$CLAUDE_DIR" ]; then
-  if grep -q "jarvis-brain" "$CLAUDE_SETTINGS" 2>/dev/null; then
+if command -v claude &>/dev/null; then
+  if claude mcp list 2>/dev/null | grep -q "jarvis-brain"; then
     ok "Already configured"
   else
-    if [ -f "$CLAUDE_SETTINGS" ] && command -v python3 &>/dev/null; then
-      python3 -c "
-import json, sys
-try:
-    with open('$CLAUDE_SETTINGS') as f:
-        s = json.load(f)
-    if 'mcpServers' not in s:
-        s['mcpServers'] = {}
-    s['mcpServers']['jarvis-brain'] = {'command': '$BRAIN_BIN/jarvis-brain'}
-    with open('$CLAUDE_SETTINGS', 'w') as f:
-        json.dump(s, f, indent=2, ensure_ascii=False)
-    print('done')
-except Exception as e:
-    print(f'fail:{e}', file=sys.stderr)
-    sys.exit(1)
-" 2>/dev/null && ok "MCP server registered" || {
-        info "Add to Claude Code MCP config:"
-        echo -e "    ${WHITE}\"jarvis-brain\": { \"command\": \"$BRAIN_BIN/jarvis-brain\" }${R}"
+    claude mcp add jarvis-brain \
+      -e PYTHONPATH="$BRAIN_DIR/lib:$BRAIN_DIR" \
+      -- python3 -m jarvis_brain.mcp_server 2>/dev/null && \
+      ok "MCP server registered in Claude Code" || {
+        info "Run manually:"
+        echo -e "    ${WHITE}claude mcp add jarvis-brain -e PYTHONPATH=\"$BRAIN_DIR/lib:$BRAIN_DIR\" -- python3 -m jarvis_brain.mcp_server${R}"
       }
-    else
-      info "Add to Claude Code MCP config:"
-      echo -e "    ${WHITE}\"jarvis-brain\": { \"command\": \"$BRAIN_BIN/jarvis-brain\" }${R}"
-    fi
   fi
 else
-  info "Claude Code not found — configure MCP manually"
+  info "Claude Code not found — install it first, then run installer again"
 fi
 
 # ── Step 4: Orb App ──
