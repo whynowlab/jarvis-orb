@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jarvis Orb</title>
+  <meta name="description" content="Give your AI a persistent brain. Watch it think in real time.">
+  <meta property="og:title" content="Jarvis Orb — Not a tool. A presence.">
+  <meta property="og:description" content="Persistent AI memory + real-time thought visualizer.">
+  <meta property="og:image" content="https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/assets/demo.gif">
+  <meta property="og:url" content="https://jarvis-orb.vercel.app">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Jarvis Orb","description":"AI Brain + Realtime Visualizer","applicationCategory":"DeveloperApplication","operatingSystem":"macOS, Windows","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"url":"https://github.com/whynowlab/jarvis-orb"}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAFAFA;
+      --text: #1D1D1F;
+      --text2: #86868B;
+      --text3: #AEAEB2;
+      --accent: #4A9EBF;
+      --purple: #6B4FA0;
+      --holo: #8EE4FF;
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--sans); -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .mouse-glow {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none; z-index: 0;
+      background: radial-gradient(900px circle at var(--mx, 50%) var(--my, 50%),
+        rgba(74,158,191,0.14) 0%, rgba(107,79,160,0.07) 25%,
+        rgba(142,228,255,0.03) 50%, transparent 70%);
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(250,250,250,0.72);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .nav-inner {
+      max-width: 980px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 22px;
+    }
+    .nav-logo {
+      font-size: 21px; font-weight: 600; letter-spacing: -0.03em;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links a {
+      font-size: 12px; color: var(--text2); text-decoration: none;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-gh {
+      font-size: 12px; text-decoration: none;
+      background: var(--text); color: white;
+      padding: 6px 14px; border-radius: 980px;
+      transition: opacity 0.3s;
+    }
+    .nav-gh:hover { opacity: 0.8; }
+
+    /* ── Common ── */
+    .container { max-width: 980px; margin: 0 auto; padding: 0 22px; }
+    .section {
+      padding: 140px 22px;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      position: relative;
+    }
+    .label {
+      font-size: 13px; font-weight: 600; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-size: clamp(28px, 5vw, 52px);
+      font-weight: 700; letter-spacing: -0.035em;
+      line-height: 1.08;
+    }
+    .sub {
+      font-size: clamp(17px, 2vw, 21px);
+      color: var(--text2); line-height: 1.5;
+      max-width: 520px; margin-top: 16px;
+    }
+    .btn-fill {
+      background: var(--text); color: white;
+      padding: 14px 28px; border-radius: 980px;
+      font-size: 17px; font-weight: 500;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: all 0.3s; display: inline-block;
+    }
+    .btn-fill:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn-outline {
+      color: var(--text); background: none;
+      padding: 14px 28px; border-radius: 980px;
+      font-size: 17px; font-weight: 500;
+      text-decoration: none; cursor: pointer;
+      border: 1.5px solid rgba(0,0,0,0.15);
+      transition: all 0.3s; display: inline-block;
+    }
+    .btn-outline:hover { border-color: rgba(0,0,0,0.4); }
+    .fade-in {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      padding-top: 44px;
+    }
+    .hero-overline {
+      font-size: 15px; font-weight: 500; color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: clamp(44px, 8vw, 80px);
+      font-weight: 700; letter-spacing: -0.04em; line-height: 1.05;
+    }
+    .hero .sub { margin-bottom: 48px; }
+    .orb-stage {
+      position: relative; width: 300px; height: 300px;
+      margin: 0 auto 48px;
+    }
+    .orb-canvas { width: 100%; height: 100%; border-radius: 50%; }
+    .orb-shadow {
+      position: absolute; bottom: -20px; left: 50%;
+      transform: translateX(-50%);
+      width: 200px; height: 40px;
+      background: radial-gradient(ellipse, rgba(74,158,191,0.12) 0%, transparent 70%);
+      filter: blur(10px);
+    }
+    .orb-light {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 1200px; height: 1200px;
+      background: radial-gradient(circle,
+        rgba(142,228,255,0.15) 0%, rgba(74,158,191,0.08) 15%,
+        rgba(107,79,160,0.04) 35%, transparent 55%);
+      pointer-events: none; z-index: -1; filter: blur(60px);
+      animation: orb-pulse 6s ease-in-out infinite;
+    }
+    @keyframes orb-pulse {
+      0%, 100% { opacity: 0.6; transform: translate(-50%,-50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%,-50%) scale(1.08); }
+    }
+    .hero-cta { display: flex; gap: 12px; margin-bottom: 40px; }
+
+    /* ── Install ── */
+    .install-section { padding: 0 22px 60px; text-align: center; }
+    .install-box { max-width: 560px; margin: 0 auto; }
+    .install-tabs { display: flex; justify-content: center; margin-bottom: 12px; }
+    .install-tab {
+      padding: 8px 20px; font-size: 13px; color: var(--text2);
+      cursor: pointer; background: none; border: none;
+      border-bottom: 2px solid transparent;
+      font-family: var(--sans); transition: all 0.2s;
+    }
+    .install-tab.active { color: var(--text); border-bottom-color: var(--text); }
+    .install-code {
+      background: var(--text); border-radius: 14px;
+      padding: 18px 24px; font-family: var(--mono); font-size: 13px;
+      color: var(--holo);
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; user-select: all;
+    }
+    .install-code:hover { opacity: 0.9; }
+    .install-code .cp {
+      color: rgba(255,255,255,0.5); font-size: 12px;
+      font-family: var(--sans); flex-shrink: 0; margin-left: 16px;
+    }
+
+    /* ── Problem ── */
+    .problem { background: white; }
+    .problem h2 { max-width: 600px; }
+    .problem .sub { max-width: 480px; }
+    .problem-list {
+      margin-top: 48px; max-width: 520px; width: 100%; text-align: left;
+    }
+    .problem-item {
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      font-size: 17px; color: var(--text);
+      line-height: 1.5;
+    }
+    .problem-item span { color: var(--text2); font-size: 15px; display: block; margin-top: 4px; }
+
+    /* ── Before/After ── */
+    .compare { background: linear-gradient(180deg, white 0%, var(--bg) 100%); }
+    .compare-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 32px; max-width: 740px; width: 100%; margin-top: 48px;
+    }
+    .compare-card {
+      padding: 36px 28px; border-radius: 20px; text-align: left;
+    }
+    .compare-card.before {
+      background: rgba(0,0,0,0.03);
+    }
+    .compare-card.after {
+      background: white;
+      box-shadow: 0 2px 40px rgba(74,158,191,0.1);
+    }
+    .compare-card h3 {
+      font-size: 13px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: 20px;
+    }
+    .compare-card.before h3 { color: var(--text2); }
+    .compare-card.after h3 { color: var(--accent); }
+    .compare-card p {
+      font-size: 15px; line-height: 1.6; color: var(--text2);
+      margin-bottom: 12px;
+    }
+    .compare-card.before p { text-decoration: line-through; color: var(--text3); }
+    .compare-card.after p { color: var(--text); text-decoration: none; }
+
+    /* ── Brain deep dive ── */
+    .brain-section {
+      background: linear-gradient(180deg, var(--bg) 0%, rgba(74,158,191,0.04) 100%);
+    }
+    .brain-features {
+      max-width: 740px; width: 100%; margin-top: 64px;
+    }
+    .brain-feat {
+      display: grid; grid-template-columns: 120px 1fr;
+      gap: 24px; padding: 40px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      text-align: left;
+    }
+    .brain-feat:last-child { border-bottom: none; }
+    .brain-feat-num {
+      font-size: 48px; font-weight: 700; letter-spacing: -0.04em;
+      color: rgba(74,158,191,0.2);
+      line-height: 1;
+    }
+    .brain-feat h3 {
+      font-size: 20px; font-weight: 600; margin-bottom: 8px;
+    }
+    .brain-feat p {
+      font-size: 15px; color: var(--text2); line-height: 1.6;
+      max-width: none;
+    }
+
+    /* ── Orb reactions ── */
+    .orb-deep {
+      background: linear-gradient(180deg, rgba(74,158,191,0.04) 0%, rgba(107,79,160,0.04) 100%);
+    }
+    .orb-reactions {
+      max-width: 600px; width: 100%; margin-top: 48px;
+    }
+    .orb-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      text-align: left;
+    }
+    .orb-row-event { font-size: 16px; font-weight: 500; }
+    .orb-row-response { font-size: 16px; color: var(--text2); }
+
+    /* ── Scenario ── */
+    .scenario {
+      background: linear-gradient(180deg, rgba(107,79,160,0.04) 0%, var(--bg) 100%);
+    }
+    .scenario-cards {
+      max-width: 740px; width: 100%; margin-top: 48px;
+      display: grid; gap: 16px;
+    }
+    .scenario-card {
+      background: white; border-radius: 20px;
+      padding: 32px; text-align: left;
+      box-shadow: 0 1px 20px rgba(0,0,0,0.04);
+      transition: box-shadow 0.3s;
+    }
+    .scenario-card:hover { box-shadow: 0 4px 32px rgba(74,158,191,0.1); }
+    .scenario-card h3 {
+      font-size: 17px; font-weight: 600; margin-bottom: 8px;
+    }
+    .scenario-card .q {
+      font-size: 15px; color: var(--accent); font-style: italic;
+      margin-bottom: 8px;
+    }
+    .scenario-card p {
+      font-size: 15px; color: var(--text2); line-height: 1.5;
+      max-width: none;
+    }
+
+    /* ── Architecture ── */
+    .arch-section {
+      background: linear-gradient(180deg, var(--bg) 0%, rgba(29,29,31,0.04) 100%);
+    }
+    .arch-box {
+      margin-top: 48px; padding: 48px;
+      background: var(--text); border-radius: 24px;
+      font-family: var(--mono); font-size: 15px;
+      color: rgba(255,255,255,0.5); line-height: 2.4;
+      max-width: 720px; width: 100%;
+    }
+    .arch-box strong { color: var(--holo); font-weight: 500; }
+    .arch-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 32px; max-width: 600px; width: 100%; margin-top: 48px;
+    }
+    .arch-stat h3 {
+      font-size: 36px; font-weight: 700; letter-spacing: -0.03em;
+      margin-bottom: 4px;
+    }
+    .arch-stat p { font-size: 14px; color: var(--text2); }
+
+    /* ── Origin ── */
+    .origin { background: var(--bg); }
+    .origin .sub { max-width: 560px; }
+    .origin-quote {
+      margin-top: 48px; max-width: 560px;
+      padding: 32px; border-left: 3px solid var(--accent);
+      text-align: left;
+      font-size: 17px; color: var(--text2); line-height: 1.6;
+      font-style: italic;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 120px 22px;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      background: var(--text); color: white;
+      border-radius: 32px 32px 0 0;
+    }
+    .footer h2 { color: white; }
+    .footer .sub { color: rgba(255,255,255,0.6); margin-bottom: 32px; }
+    .footer .btn-fill { background: white; color: var(--text); }
+    .footer-links {
+      margin-top: 48px; font-size: 13px; color: rgba(255,255,255,0.4);
+    }
+    .footer-links a { color: rgba(255,255,255,0.6); text-decoration: none; }
+    .footer-links a:hover { color: white; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .section { padding: 80px 22px; }
+      .compare-grid { grid-template-columns: 1fr; }
+      .brain-feat { grid-template-columns: 1fr; }
+      .brain-feat-num { font-size: 32px; }
+      .arch-stats { grid-template-columns: 1fr; }
+      .nav-links a:not(.nav-gh) { display: none; }
+      .hero-cta { flex-direction: column; }
+      .orb-stage { width: 220px; height: 220px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mouse-glow" id="mouse-glow"></div>
+
+  <!-- Nav -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">Jarvis Orb</a>
+      <div class="nav-links">
+        <a href="#problem">Why</a>
+        <a href="#brain">Brain</a>
+        <a href="#orb-section">Orb</a>
+        <a href="#arch">Stack</a>
+        <a href="https://github.com/whynowlab/jarvis-orb" class="nav-gh" target="_blank">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ==================== HERO ==================== -->
+  <section class="section hero">
+    <div class="hero-overline">Jarvis Orb</div>
+    <h1>Not a tool.<br>A presence.</h1>
+    <div class="sub">It remembers your decisions. It tracks your world.<br>It glows on your desktop, alive.</div>
+
+    <div class="orb-stage" id="orb-stage">
+      <div class="orb-light"></div>
+      <canvas class="orb-canvas" id="orb-hero"></canvas>
+      <div class="orb-shadow"></div>
+    </div>
+
+    <div class="hero-cta">
+      <a href="https://github.com/whynowlab/jarvis-orb/releases/latest" class="btn-fill">Download</a>
+      <a href="https://github.com/whynowlab/jarvis-orb" class="btn-outline">GitHub →</a>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <div class="install-section">
+    <div class="install-box">
+      <div class="install-tabs">
+        <button class="install-tab active" onclick="showTab('mac')">macOS / Linux</button>
+        <button class="install-tab" onclick="showTab('win')">Windows</button>
+      </div>
+      <div class="install-code" id="code-mac" onclick="copyCode(this)">
+        <span>curl -fsSL https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.sh | bash</span>
+        <span class="cp">copy</span>
+      </div>
+      <div class="install-code" id="code-win" style="display:none" onclick="copyCode(this)">
+        <span>irm https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.ps1 | iex</span>
+        <span class="cp">copy</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PROBLEM ==================== -->
+  <section class="section problem fade-in" id="problem">
+    <div class="label">The problem</div>
+    <h2>Every session is<br>a first date.</h2>
+    <div class="sub">You explain your project. Again. Your preferences. Again. That decision you made last Tuesday. Again.</div>
+
+    <div class="problem-list">
+      <div class="problem-item">
+        "We decided to use SQLite for this."
+        <span>Three days later, your AI suggests PostgreSQL.</span>
+      </div>
+      <div class="problem-item">
+        "This PR was merged yesterday."
+        <span>Your AI doesn't know. It never remembers state.</span>
+      </div>
+      <div class="problem-item">
+        "I prefer short, direct answers."
+        <span>Explained five times. Still forgotten.</span>
+      </div>
+      <div class="problem-item">
+        "What was the architecture decision?"
+        <span>Gone. The session ended. Context is zero.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== BEFORE / AFTER ==================== -->
+  <section class="section compare fade-in">
+    <div class="label">The shift</div>
+    <h2>Before and after.</h2>
+    <div class="sub">One install changes everything.</div>
+
+    <div class="compare-grid">
+      <div class="compare-card before">
+        <h3>Without Jarvis Orb</h3>
+        <p>Every session starts from zero.</p>
+        <p>Reversed decisions come back.</p>
+        <p>"What's the status of this?" → guess.</p>
+        <p>AI is a tool. Use it and close it.</p>
+        <p>No idea what it's thinking.</p>
+      </div>
+      <div class="compare-card after">
+        <h3>With Jarvis Orb</h3>
+        <p>Context carries over. Automatically.</p>
+        <p>Contradictions detected and filtered.</p>
+        <p>"What's the status?" → exact state + history.</p>
+        <p>AI becomes a presence. It knows you.</p>
+        <p>You see every thought, live on your screen.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== BRAIN DEEP DIVE ==================== -->
+  <section class="section brain-section fade-in" id="brain">
+    <div class="label">Brain Lite</div>
+    <h2>Watch it think.</h2>
+    <div class="sub">Four tiers of memory. Temporal scoring. Contradiction detection. Entity tracking with relationships.</div>
+
+    <div class="brain-features">
+      <div class="brain-feat">
+        <div class="brain-feat-num">01</div>
+        <div>
+          <h3>4-Tier Memory</h3>
+          <p>Episodic memories for recent work. Semantic memories for your preferences and principles. Project memories for each codebase. Procedural memories for recurring workflows. Every memory auto-classified.</p>
+        </div>
+      </div>
+      <div class="brain-feat">
+        <div class="brain-feat-num">02</div>
+        <div>
+          <h3>Temporal Scoring</h3>
+          <p>Not all memories are equal. Recent ones rank higher with a 30-day half-life. Yesterday's decision matters more than last month's. Old context fades naturally, just like it should.</p>
+        </div>
+      </div>
+      <div class="brain-feat">
+        <div class="brain-feat-num">03</div>
+        <div>
+          <h3>Contradiction Detection</h3>
+          <p>Your AI said "use SQLite" on Monday and "use Postgres" on Friday. Jarvis Orb catches that. Conflicting memories are flagged, superseded decisions marked stale. Only the truth surfaces.</p>
+        </div>
+      </div>
+      <div class="brain-feat">
+        <div class="brain-feat-num">04</div>
+        <div>
+          <h3>Entity Tracking</h3>
+          <p>Projects, PRs, people, decisions — tracked as first-class objects with full state transition history. "What happened to PR #42?" isn't a search. It's a lookup with timestamps and reasons.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== ORB DEEP DIVE ==================== -->
+  <section class="section orb-deep fade-in" id="orb-section">
+    <div class="label">Orb</div>
+    <h2>Every thought, visible.</h2>
+    <div class="sub">A living orb floats on your desktop. Not decorative — functional. It shows you what the brain is doing, in real time.</div>
+
+    <div style="margin: 48px 0;">
+      <img src="https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/assets/demo.gif" alt="Jarvis Orb in action" style="width: clamp(240px, 40vw, 360px); border-radius: 20px; box-shadow: 0 8px 40px rgba(0,0,0,0.08);">
+      <div style="margin-top: 12px; font-size: 13px; color: var(--text3);">Actual footage. Not a mockup.</div>
+    </div>
+
+    <div class="orb-reactions">
+      <div class="orb-row"><div class="orb-row-event">Memory saved</div><div class="orb-row-response">Particles absorb into the orb</div></div>
+      <div class="orb-row"><div class="orb-row-event">Contradiction detected</div><div class="orb-row-response">Red/orange pulse wave</div></div>
+      <div class="orb-row"><div class="orb-row-event">Entity state changed</div><div class="orb-row-response">Cyan flash + scale pulse</div></div>
+      <div class="orb-row"><div class="orb-row-event">Search executed</div><div class="orb-row-response">Violet color shift</div></div>
+      <div class="orb-row"><div class="orb-row-event">Context compressed</div><div class="orb-row-response">Shrink, brighten, expand</div></div>
+      <div class="orb-row"><div class="orb-row-event">Team dispatched</div><div class="orb-row-response">Orb splits into sub-orbs</div></div>
+    </div>
+  </section>
+
+  <!-- ==================== SCENARIOS ==================== -->
+  <section class="section scenario fade-in">
+    <div class="label">In practice</div>
+    <h2>Real situations.<br>Real answers.</h2>
+    <div class="sub">Here's what changes when your AI has a brain.</div>
+
+    <div class="scenario-cards">
+      <div class="scenario-card">
+        <h3>Monday morning standup</h3>
+        <div class="q">"What did we work on last week?"</div>
+        <p>Brain searches episodic memories with temporal scoring. Returns a ranked summary of last week's decisions, PRs, and architecture changes. No digging through chat history.</p>
+      </div>
+      <div class="scenario-card">
+        <h3>Mid-project contradiction</h3>
+        <div class="q">"We should use Redis for caching."</div>
+        <p>Brain detects this contradicts a previous decision: "Use SQLite for everything to keep it simple." Flags the conflict. The orb pulses red. You see it happening.</p>
+      </div>
+      <div class="scenario-card">
+        <h3>New session, no context loss</h3>
+        <div class="q">"Continue where we left off."</div>
+        <p>Brain loads project state, recent decisions, and your preferences. No re-explaining. The AI already knows your project architecture, your coding style, your naming conventions.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== ARCHITECTURE ==================== -->
+  <section class="section arch-section fade-in" id="arch">
+    <div class="label">Architecture</div>
+    <h2>Simple. Local. Yours.</h2>
+    <div class="sub">No cloud. No servers. No subscriptions. One SQLite file on your machine. That's it.</div>
+
+    <div class="arch-box">
+      <strong>Claude Code / Cursor</strong><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↕ MCP (stdio)<br>
+      <strong>Brain Lite</strong> — Python · aiosqlite · FTS5<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↕ WebSocket<br>
+      <strong>Orb</strong> — Tauri · Three.js · WebGL<br><br>
+      ~/.jarvis-orb/brain.db — all your data, one file.
+    </div>
+
+    <div class="arch-stats">
+      <div class="arch-stat"><h3>3MB</h3><p>App size. Not 150MB.</p></div>
+      <div class="arch-stat"><h3>7</h3><p>MCP tools. Memory, entities, search.</p></div>
+      <div class="arch-stat"><h3>0</h3><p>Cloud dependencies.</p></div>
+    </div>
+  </section>
+
+  <!-- ==================== ORIGIN STORY ==================== -->
+  <section class="section origin fade-in">
+    <div class="label">Origin</div>
+    <h2>Built from a real system.</h2>
+    <div class="sub">Jarvis Orb isn't a concept. It was extracted from a working AI control plane running 19 modules, a knowledge graph with 100+ entities, and 22 agent teams. This is the lightweight, open version.</div>
+
+    <div class="origin-quote">
+      "I built a personal AI operating system called Jarvis. It runs my daily workflow — from code review to strategy analysis to memory management. After months of using it, I realized the core — the brain and the visualization — should be available to everyone."
+    </div>
+  </section>
+
+  <!-- ==================== FOOTER ==================== -->
+  <div class="footer">
+    <h2>Your AI will start<br>remembering.</h2>
+    <div class="sub">Install Jarvis Orb. Give it a brain. Watch it think.</div>
+    <a href="https://github.com/whynowlab/jarvis-orb/releases/latest" class="btn-fill">Download</a>
+    <div class="footer-links">
+      <a href="https://github.com/whynowlab/jarvis-orb">GitHub</a> ·
+      <a href="https://github.com/whynowlab/jarvis-orb/releases">Releases</a> ·
+      MIT License ·
+      <a href="https://github.com/whynowlab">whynowlab</a>
+    </div>
+  </div>
+
+  <!-- Three.js Orb -->
+  <script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.module.js" } }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    const canvas = document.getElementById('orb-hero');
+    const stage = document.getElementById('orb-stage');
+    const w = stage.clientWidth, h = stage.clientHeight;
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setSize(w, h); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.z = 3;
+
+    const vs = `
+      uniform float uTime; varying vec3 vN, vP;
+      vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}
+      vec4 mod289(vec4 x){return x-floor(x*(1./289.))*289.;}
+      vec4 permute(vec4 x){return mod289(((x*34.)+1.)*x);}
+      vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-.85373472095314*r;}
+      float snoise(vec3 v){const vec2 C=vec2(1./6.,1./3.);const vec4 D=vec4(0.,.5,1.,2.);vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.-g;vec3 i1=min(g,l.zxy);vec3 i2=max(g,l.zxy);vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.yyy;vec3 x3=x0-D.yyy;i=mod289(i);vec4 p=permute(permute(permute(i.z+vec4(0.,i1.z,i2.z,1.))+i.y+vec4(0.,i1.y,i2.y,1.))+i.x+vec4(0.,i1.x,i2.x,1.));float n_=.142857142857;vec3 ns=n_*D.wyz-D.xzx;vec4 j=p-49.*floor(p*ns.z*ns.z);vec4 x_=floor(j*ns.z);vec4 y_=floor(j-7.*x_);vec4 x=x_*ns.x+ns.yyyy;vec4 y=y_*ns.x+ns.yyyy;vec4 h=1.-abs(x)-abs(y);vec4 b0=vec4(x.xy,y.xy);vec4 b1=vec4(x.zw,y.zw);vec4 s0=floor(b0)*2.+1.;vec4 s1=floor(b1)*2.+1.;vec4 sh=-step(h,vec4(0.));vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;vec3 p0=vec3(a0.xy,h.x);vec3 p1=vec3(a0.zw,h.y);vec3 p2=vec3(a1.xy,h.z);vec3 p3=vec3(a1.zw,h.w);vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;vec4 m=max(.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.);m=m*m;return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));}
+      void main(){vN=normal;vP=position;float n=snoise(position*1.8+uTime*0.3);vec3 np=position+normal*n*0.08;gl_Position=projectionMatrix*modelViewMatrix*vec4(np,1.);}
+    `;
+    const fs = `
+      uniform float uTime; uniform vec2 uMouse; varying vec3 vN, vP;
+      void main(){
+        vec3 vd=normalize(cameraPosition-vP); float fr=pow(1.-max(dot(vd,vN),0.),2.);
+        float t=(vP.y+1.)*.5; vec3 c1=vec3(.29,.62,.75); vec3 c2=vec3(.42,.31,.63);
+        vec3 base=mix(c1,c2,t+uMouse.x*0.2);
+        float iri=fr*0.2; vec3 ic=vec3(sin(vP.y*4.+uTime*.6)*iri,sin(vP.y*4.+uTime*.6+2.094)*iri,sin(vP.y*4.+uTime*.6+4.189)*iri);
+        vec3 glow=vec3(.56,.89,1.)*fr*0.3;
+        gl_FragColor=vec4(base+glow+ic,0.92);
+      }
+    `;
+    const u = { uTime:{value:0}, uMouse:{value:new THREE.Vector2(0,0)} };
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.8,96,96), new THREE.ShaderMaterial({vertexShader:vs,fragmentShader:fs,uniforms:u,transparent:true}));
+    scene.add(mesh);
+    let mx=0, my=0;
+    stage.addEventListener('mousemove', e => {
+      const r=stage.getBoundingClientRect();
+      mx=((e.clientX-r.left)/r.width-0.5)*2;
+      my=((e.clientY-r.top)/r.height-0.5)*2;
+    });
+    const ck = new THREE.Clock();
+    (function animate(){
+      requestAnimationFrame(animate);
+      const t=ck.getElapsedTime();
+      u.uTime.value=t;
+      u.uMouse.value.x+=(mx-u.uMouse.value.x)*0.05;
+      u.uMouse.value.y+=(my-u.uMouse.value.y)*0.05;
+      mesh.rotation.y=t*0.08+u.uMouse.value.x*0.3;
+      mesh.rotation.x=u.uMouse.value.y*0.2;
+      const s=1+Math.sin(t*0.6)*0.02;
+      mesh.scale.set(s,s,s);
+      renderer.render(scene,camera);
+    })();
+
+    // Scroll fade
+    const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')});},{threshold:0.12});
+    document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
+  </script>
+
+  <script>
+    // Mouse glow + orb light + shadows
+    const orbStage=document.getElementById('orb-stage');
+    const orbRect=()=>orbStage.getBoundingClientRect();
+    const shadowEls=document.querySelectorAll('.compare-card.after,.brain-feat,.scenario-card,.arch-box,.orb-row');
+
+    document.addEventListener('mousemove',e=>{
+      document.getElementById('mouse-glow').style.setProperty('--mx',e.clientX+'px');
+      document.getElementById('mouse-glow').style.setProperty('--my',e.clientY+'px');
+      const or=orbRect();
+      const ocx=or.left+or.width/2, ocy=or.top+or.height/2;
+      const dist=Math.sqrt((e.clientX-ocx)**2+(e.clientY-ocy)**2);
+      const intensity=Math.max(0,1-dist/1200);
+      const ol=document.querySelector('.orb-light');
+      if(ol){ol.style.opacity=0.4+intensity*0.6;ol.style.width=(900+intensity*600)+'px';ol.style.height=(900+intensity*600)+'px';}
+      shadowEls.forEach(el=>{
+        const r=el.getBoundingClientRect();
+        const dx=(r.left+r.width/2-e.clientX)*0.02;
+        const dy=(r.top+r.height/2-e.clientY)*0.02;
+        const d=Math.sqrt((r.left+r.width/2-e.clientX)**2+(r.top+r.height/2-e.clientY)**2);
+        const p=Math.max(0,1-d/600);
+        el.style.boxShadow=`${dx}px ${dy}px ${12+p*24}px rgba(74,158,191,${0.04+p*0.1})`;
+        el.style.transition='box-shadow 0.15s ease';
+      });
+    });
+
+    function showTab(os){
+      document.getElementById('code-mac').style.display=os==='mac'?'flex':'none';
+      document.getElementById('code-win').style.display=os==='win'?'flex':'none';
+      document.querySelectorAll('.install-tab').forEach(t=>t.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+    function copyCode(el){
+      navigator.clipboard.writeText(el.querySelector('span').textContent);
+      el.querySelector('.cp').textContent='copied!';
+      setTimeout(()=>el.querySelector('.cp').textContent='copy',2000);
+    }
+  </script>
+</body>
+</html>
