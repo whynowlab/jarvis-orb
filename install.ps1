@@ -8,11 +8,22 @@ $BrainDir = "$env:USERPROFILE\.jarvis-orb"
 $BrainBin = "$BrainDir\bin"
 
 # ── Colors ──
+$Script:StepNum = 0
+$Script:TotalSteps = 4
+
 function Write-Cyan($msg) { Write-Host "  $msg" -ForegroundColor Cyan }
 function Write-Ok($msg) { Write-Host "    ✓ $msg" -ForegroundColor Green }
 function Write-Warn($msg) { Write-Host "    ! $msg" -ForegroundColor Yellow }
 function Write-Info($msg) { Write-Host "    $msg" -ForegroundColor DarkGray }
-function Write-Step($msg) { Write-Host "`n  → $msg" -ForegroundColor White }
+function Write-Step($msg) {
+    $Script:StepNum++
+    $filled = [int]($Script:StepNum * 20 / $Script:TotalSteps)
+    $empty = 20 - $filled
+    $bar = ("█" * $filled) + ("░" * $empty)
+    Write-Host ""
+    Write-Host "  [$bar] $($Script:StepNum)/$($Script:TotalSteps)" -ForegroundColor DarkGray
+    Write-Host "  → $msg" -ForegroundColor White
+}
 
 # ── Header ──
 Write-Host ""
@@ -69,13 +80,27 @@ try {
 }
 
 # Create launcher
-$launcherContent = @"
+$brainLauncher = @"
 @echo off
 set PYTHONPATH=$BrainDir\lib;$BrainDir
 python -m jarvis_brain.mcp_server %*
 "@
-Set-Content -Path "$BrainBin\jarvis-brain.bat" -Value $launcherContent
-Write-Ok "Brain launcher → $BrainBin\jarvis-brain.bat"
+Set-Content -Path "$BrainBin\jarvis-brain.bat" -Value $brainLauncher
+
+$orbLauncher = @"
+@echo off
+set PYTHONPATH=$BrainDir\lib;$BrainDir
+python -m jarvis_brain.cli %*
+"@
+Set-Content -Path "$BrainBin\jarvis-orb.bat" -Value $orbLauncher
+Write-Ok "Commands → jarvis-orb, jarvis-brain"
+
+# Add to PATH
+$currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($currentPath -notlike "*$BrainBin*") {
+    [Environment]::SetEnvironmentVariable("Path", "$BrainBin;$currentPath", "User")
+    Write-Ok "Added to PATH (restart terminal to use)"
+}
 
 # ── Step 3: Claude Code MCP ──
 Write-Step "Configuring Claude Code"

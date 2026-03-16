@@ -39,8 +39,19 @@ case "$OS" in
   *) echo -e "  ${RED}Unsupported: $OS${R}"; exit 1 ;;
 esac
 
+STEP_NUM=0
+TOTAL_STEPS=4
+
 step() {
+  STEP_NUM=$((STEP_NUM + 1))
   echo ""
+  # Progress bar
+  local filled=$((STEP_NUM * 20 / TOTAL_STEPS))
+  local empty=$((20 - filled))
+  local bar=""
+  for i in $(seq 1 $filled); do bar="${bar}█"; done
+  for i in $(seq 1 $empty); do bar="${bar}░"; done
+  echo -e "  ${DIM}[${bar}] ${STEP_NUM}/${TOTAL_STEPS}${R}"
   echo -e "  ${CYAN}→${R} ${B}$1${R}"
 }
 
@@ -58,6 +69,19 @@ warn() {
 
 fail() {
   echo -e "    ${RED}✗${R} $1"
+}
+
+spinner() {
+  local pid=$1
+  local msg=$2
+  local chars="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+  local i=0
+  while kill -0 $pid 2>/dev/null; do
+    printf "\r    ${CYAN}${chars:$i:1}${R} ${DIM}${msg}${R}" >&2
+    i=$(( (i + 1) % ${#chars} ))
+    sleep 0.1
+  done
+  printf "\r                                          \r" >&2
 }
 
 # ── Step 1: Environment ──
@@ -107,7 +131,28 @@ export PYTHONPATH="$HOME/.jarvis-orb/lib:$HOME/.jarvis-orb"
 exec python3 -m jarvis_brain.mcp_server "$@"
 EOF
 chmod +x "$BRAIN_BIN/jarvis-brain"
-ok "Brain launcher → ~/.jarvis-orb/bin/jarvis-brain"
+
+cat > "$BRAIN_BIN/jarvis-orb" << 'EOF'
+#!/bin/bash
+export PYTHONPATH="$HOME/.jarvis-orb/lib:$HOME/.jarvis-orb"
+exec python3 -m jarvis_brain.cli "$@"
+EOF
+chmod +x "$BRAIN_BIN/jarvis-orb"
+ok "Commands → jarvis-orb, jarvis-brain"
+
+# Add to PATH if not already
+if [[ ":$PATH:" != *":$BRAIN_BIN:"* ]]; then
+  SHELL_RC=""
+  if [ -f "$HOME/.zshrc" ]; then SHELL_RC="$HOME/.zshrc"
+  elif [ -f "$HOME/.bashrc" ]; then SHELL_RC="$HOME/.bashrc"
+  fi
+  if [ -n "$SHELL_RC" ]; then
+    if ! grep -q "jarvis-orb/bin" "$SHELL_RC" 2>/dev/null; then
+      echo 'export PATH="$HOME/.jarvis-orb/bin:$PATH"' >> "$SHELL_RC"
+      ok "Added to PATH in $(basename $SHELL_RC)"
+    fi
+  fi
+fi
 
 # ── Step 3: Claude Code MCP ──
 step "Configuring Claude Code"
