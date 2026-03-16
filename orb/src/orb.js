@@ -361,23 +361,31 @@ export function createOrb(canvas) {
 
       switch (type) {
         case 'memory_save':
-          targets.glowIntensity = 0.6;
-          targets.displacement = 0.14;
-          targets.bloomStrength = 0.2;
-          emitParticles();
-          break;
-
-        case 'memory_contradict':
-          targets.alertMix = 0.6;
-          targets.displacement = 0.18;
-          targets.glowIntensity = 0.5;
+          targets.glowIntensity = 0.8;
+          targets.displacement = 0.22;
+          targets.scale = 1.1;
           targets.bloomStrength = 0.25;
+          emitParticles();
           animationTime = 3.0;
           break;
 
+        case 'memory_contradict':
+          targets.alertMix = 0.8;
+          targets.displacement = 0.28;
+          targets.glowIntensity = 0.7;
+          targets.bloomStrength = 0.3;
+          targets.scale = 1.05;
+          animationTime = 3.5;
+          break;
+
         case 'entity_update':
-          targets.displacement = 0.16;
-          targets.glowIntensity = 0.45;
+          // Visible pulse — scale up then back + color shift to bright cyan
+          targets.scale = 1.15;
+          targets.displacement = 0.25;
+          targets.glowIntensity = 0.7;
+          targets.bloomStrength = 0.2;
+          uniforms.uColor1.value.set(0x00D4FF);  // bright cyan flash
+          animationTime = 2.5;
           break;
 
         case 'team_dispatch':
@@ -396,31 +404,38 @@ export function createOrb(canvas) {
             s.position.lerp(new THREE.Vector3(0, 0, 0), 0.1);
             setTimeout(() => { s.visible = false; }, 1000);
           });
-          targets.scale = 1.08;
-          targets.glowIntensity = 0.5;
+          targets.scale = 1.15;
+          targets.glowIntensity = 0.7;
+          targets.bloomStrength = 0.25;
           emitParticles();
           break;
 
         case 'context_compact':
-          targets.scale = 0.55;
-          targets.glowIntensity = 0.7;
-          targets.displacement = 0.04;
-          targets.bloomStrength = 0.2;
-          animationTime = 2.0;
+          targets.scale = 0.45;
+          targets.glowIntensity = 0.9;
+          targets.displacement = 0.03;
+          targets.bloomStrength = 0.3;
+          animationTime = 2.5;
           break;
 
         case 'session_start':
-          targets.scale = 1.12;
-          targets.glowIntensity = 0.6;
-          targets.displacement = 0.15;
-          targets.bloomStrength = 0.2;
+          targets.scale = 1.2;
+          targets.glowIntensity = 0.8;
+          targets.displacement = 0.2;
+          targets.bloomStrength = 0.25;
           animationTime = 3.0;
           emitParticles();
           break;
 
         case 'search':
-          uniforms.uColor1.value.set(0x7B5EA7);  // muted violet
-          targets.glowIntensity = 0.45;
+          // Visible violet shift + pulse
+          uniforms.uColor1.value.set(0x9B60FF);  // bright violet
+          uniforms.uColor2.value.set(0xBB80FF);  // lighter violet
+          targets.scale = 0.9;
+          targets.glowIntensity = 0.7;
+          targets.displacement = 0.18;
+          targets.bloomStrength = 0.2;
+          animationTime = 2.5;
           break;
 
         case 'idle':

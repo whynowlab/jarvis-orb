@@ -135,6 +135,7 @@ async def entity_query(entity_type: str = "", name: str = "") -> str:
     await _ensure_init()
     results = await _entities.query(
         entity_type=entity_type or None, name=name or None)
+    await _emit("search", f"Entity query: {entity_type or 'all'} → {len(results)}건")
     lines = [f"[{e.entity_type}] {e.name}: {json.dumps(e.current_state, ensure_ascii=False)}"
              for e in results]
     return "\n".join(lines) if lines else "No entities found."
