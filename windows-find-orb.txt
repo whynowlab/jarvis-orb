@@ -1,0 +1,1 @@
+Get-ChildItem -Path "C:\Program Files","$env:LOCALAPPDATA","$env:APPDATA" -Recurse -Filter "Jarvis Orb.exe" -ErrorAction SilentlyContinue | Select FullName
