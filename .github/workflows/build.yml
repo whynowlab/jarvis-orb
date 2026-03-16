@@ -92,14 +92,9 @@ jobs:
 
       - name: Build Brain binary
         working-directory: brain
+        shell: bash
         run: |
-          pyinstaller --onefile --name jarvis-brain \
-            --hidden-import jarvis_brain.memory \
-            --hidden-import jarvis_brain.entities \
-            --hidden-import jarvis_brain.event_emitter \
-            --hidden-import jarvis_brain.schemas \
-            --hidden-import jarvis_brain.config \
-            jarvis_brain/mcp_server.py
+          pyinstaller --onefile --name jarvis-brain --hidden-import jarvis_brain.memory --hidden-import jarvis_brain.entities --hidden-import jarvis_brain.event_emitter --hidden-import jarvis_brain.schemas --hidden-import jarvis_brain.config jarvis_brain/mcp_server.py
 
       - name: Upload Brain artifact
         uses: actions/upload-artifact@v4
