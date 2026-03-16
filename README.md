@@ -54,17 +54,17 @@ Every session, your AI starts over. Your decisions, your preferences, your proje
 
 ## Install
 
-**macOS / Linux:**
+**macOS (Apple Silicon) / Linux:**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.sh | bash
 ```
+
+> Requires Apple Silicon (M1/M2/M3/M4). Use the terminal command above for the smoothest install experience.
 
 **Windows (PowerShell):**
 ```powershell
 irm https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.ps1 | iex
 ```
-
-**Or** → [Download directly](https://github.com/whynowlab/jarvis-orb/releases/latest)
 
 That's it. Brain starts. Orb floats. Claude Code connects.
 
