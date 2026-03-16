@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-orb:
     strategy:
       matrix:
         include:
@@ -52,6 +52,54 @@ jobs:
           projectPath: orb
           tagName: ${{ github.ref_name }}
           releaseName: "Jarvis Orb ${{ github.ref_name }}"
-          releaseBody: "Jarvis Orb — AI Brain Visualizer"
+          releaseBody: |
+            ## Jarvis Orb — AI Brain Visualizer
+
+            Install everything with one command:
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.sh | bash
+            ```
+
+            Or download the Orb app below and install Brain Lite separately.
           releaseDraft: true
           args: --target ${{ matrix.target }}
+
+  build-brain:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            name: brain-macos
+          - os: windows-latest
+            name: brain-windows
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
+        working-directory: brain
+        run: |
+          pip install aiosqlite websockets pyinstaller
+
+      - name: Build Brain binary
+        working-directory: brain
+        run: |
+          pyinstaller --onefile --name jarvis-brain \
+            --hidden-import jarvis_brain.memory \
+            --hidden-import jarvis_brain.entities \
+            --hidden-import jarvis_brain.event_emitter \
+            --hidden-import jarvis_brain.schemas \
+            --hidden-import jarvis_brain.config \
+            jarvis_brain/mcp_server.py
+
+      - name: Upload Brain artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: brain/dist/jarvis-brain*
