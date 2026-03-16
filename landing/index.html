@@ -393,25 +393,32 @@
     </div>
 
     <div class="hero-cta">
-      <a href="https://github.com/whynowlab/jarvis-orb/releases/latest" class="btn-fill">Download</a>
+      <a href="#install" class="btn-fill">Install</a>
       <a href="https://github.com/whynowlab/jarvis-orb" class="btn-outline">GitHub →</a>
     </div>
   </section>
 
   <!-- Install -->
-  <div class="install-section">
+  <div class="install-section" id="install">
     <div class="install-box">
       <div class="install-tabs">
-        <button class="install-tab active" onclick="showTab('mac')">macOS / Linux</button>
+        <button class="install-tab active" onclick="showTab('mac')">macOS (Apple Silicon)</button>
         <button class="install-tab" onclick="showTab('win')">Windows</button>
       </div>
       <div class="install-code" id="code-mac" onclick="copyCode(this)">
         <span>curl -fsSL https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.sh | bash</span>
         <span class="cp">copy</span>
       </div>
+      <div id="mac-note" style="margin-top:10px;font-size:13px;color:var(--text3);max-width:560px;">
+        Open Terminal (Cmd+Space → "Terminal") and paste the command above.<br>
+        Requires Apple Silicon (M1/M2/M3/M4). <a href="https://github.com/whynowlab/jarvis-orb/releases/latest" style="color:var(--accent);text-decoration:none;">Windows? Download here →</a>
+      </div>
       <div class="install-code" id="code-win" style="display:none" onclick="copyCode(this)">
         <span>irm https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.ps1 | iex</span>
         <span class="cp">copy</span>
+      </div>
+      <div id="win-note" style="display:none;margin-top:10px;font-size:13px;color:var(--text3);max-width:560px;">
+        Open PowerShell and paste the command above. Or <a href="https://github.com/whynowlab/jarvis-orb/releases/latest" style="color:var(--accent);text-decoration:none;">download the installer directly →</a>
       </div>
     </div>
   </div>
@@ -589,7 +596,7 @@
   <div class="footer">
     <h2>Your AI will start<br>remembering.</h2>
     <div class="sub">Install Jarvis Orb. Give it a brain. Watch it think.</div>
-    <a href="https://github.com/whynowlab/jarvis-orb/releases/latest" class="btn-fill">Download</a>
+    <a href="#install" class="btn-fill" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Install</a>
     <div class="footer-links">
       <a href="https://github.com/whynowlab/jarvis-orb">GitHub</a> ·
       <a href="https://github.com/whynowlab/jarvis-orb/releases">Releases</a> ·
@@ -690,6 +697,8 @@
     function showTab(os){
       document.getElementById('code-mac').style.display=os==='mac'?'flex':'none';
       document.getElementById('code-win').style.display=os==='win'?'flex':'none';
+      document.getElementById('mac-note').style.display=os==='mac'?'block':'none';
+      document.getElementById('win-note').style.display=os==='win'?'block':'none';
       document.querySelectorAll('.install-tab').forEach(t=>t.classList.remove('active'));
       event.target.classList.add('active');
     }

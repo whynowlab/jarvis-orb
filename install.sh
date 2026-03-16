@@ -16,7 +16,7 @@ WHITE='\033[97m'
 HOLO='\033[38;2;142;228;255m'
 
 REPO="whynowlab/jarvis-orb"
-VERSION="0.2.1"
+VERSION="0.3.1"
 BRAIN_DIR="$HOME/.jarvis-orb"
 BRAIN_BIN="$BRAIN_DIR/bin"
 
@@ -77,6 +77,14 @@ case "$OS" in
   MINGW*|MSYS*|CYGWIN*) PLATFORM="windows" ;;
   *) echo -e "  ${RED}Unsupported: $OS${R}"; exit 1 ;;
 esac
+
+# ── Apple Silicon check ──
+if [ "$PLATFORM" = "macos" ] && [ "$ARCH" != "arm64" ]; then
+  echo -e "  ${RED}Apple Silicon (M1+) required.${R}"
+  echo -e "  ${DIM}Intel Mac is not supported. Jarvis Orb requires Apple Silicon (M1, M2, M3, M4).${R}"
+  echo ""
+  exit 1
+fi
 
 # ── Start ──
 show_logo
@@ -168,15 +176,21 @@ step "Installing Orb"
 
 if [ "$PLATFORM" = "macos" ]; then
   LATEST=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null | \
-    grep "browser_download_url.*dmg" | head -1 | cut -d'"' -f4)
+    grep "browser_download_url.*aarch64.*dmg" | head -1 | cut -d'"' -f4)
   if [ -n "$LATEST" ]; then
-    info "Downloading..."
-    curl -fsSL -o "/tmp/JarvisOrb.dmg" "$LATEST"
-    hdiutil attach "/tmp/JarvisOrb.dmg" -quiet
-    cp -r "/Volumes/Jarvis Orb/Jarvis Orb.app" "/Applications/" 2>/dev/null || true
-    hdiutil detach "/Volumes/Jarvis Orb" -quiet 2>/dev/null || true
-    rm -f "/tmp/JarvisOrb.dmg"
-    ok "Jarvis Orb.app → /Applications/"
+    info "Downloading Orb for Apple Silicon..."
+    if curl -fsSL -o "/tmp/JarvisOrb.dmg" "$LATEST"; then
+      hdiutil attach "/tmp/JarvisOrb.dmg" -quiet -nobrowse 2>/dev/null
+      if cp -r "/Volumes/Jarvis Orb/Jarvis Orb.app" "/Applications/" 2>/dev/null; then
+        ok "Jarvis Orb.app → /Applications/"
+      else
+        warn "Could not copy to /Applications/ — try running with sudo"
+      fi
+      hdiutil detach "/Volumes/Jarvis Orb" -quiet 2>/dev/null || true
+      rm -f "/tmp/JarvisOrb.dmg"
+    else
+      warn "Download failed — check your network connection"
+    fi
   else
     warn "No release found — build: cd orb && pnpm install && cargo tauri build"
   fi
