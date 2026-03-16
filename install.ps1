@@ -41,7 +41,7 @@ New-Item -ItemType Directory -Force -Path $BrainBin | Out-Null
 
 if ($hasPython) {
     Write-Info "Installing dependencies..."
-    python -m pip install --target "$BrainDir\lib" aiosqlite websockets 2>&1 | Out-Null
+    $pipOutput = python -m pip install --target "$BrainDir\lib" aiosqlite websockets 2>&1
     Write-Ok "Dependencies installed"
 }
 
