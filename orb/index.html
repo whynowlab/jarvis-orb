@@ -45,7 +45,8 @@
   </style>
 </head>
 <body>
-  <canvas id="orb-canvas"></canvas>
+  <div id="drag-region" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:2;-webkit-app-region:drag;"></div>
+  <canvas id="orb-canvas" style="position:relative;z-index:1;"></canvas>
   <div id="log-panel"></div>
   <script type="module" src="/src/main.js"></script>
 </body>

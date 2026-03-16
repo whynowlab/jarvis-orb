@@ -1,11 +1,13 @@
 import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
 /**
- * Jarvis Orb — Organic sphere with event-reactive animations.
- * Blue/purple energy base + cyan holographic Jarvis touch.
+ * Jarvis Orb v3 — Premium quality. Less is more.
+ * Desaturated cyan/purple + subtle bloom + minimal particles.
  */
 
-// Vertex shader: displacement for organic surface
 const vertexShader = `
   uniform float uTime;
   uniform float uDisplacement;
@@ -14,7 +16,6 @@ const vertexShader = `
   varying vec3 vPosition;
   varying float vDisplacement;
 
-  // Simplex-like noise
   vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
   vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
   vec4 permute(vec4 x) { return mod289(((x * 34.0) + 1.0) * x); }
@@ -67,7 +68,8 @@ const vertexShader = `
     vNormal = normal;
     vPosition = position;
 
-    float noise = snoise(position * 2.0 + uTime * 0.5);
+    // Single octave — smooth, not busy
+    float noise = snoise(position * 1.8 + uTime * 0.3);
     vDisplacement = noise;
 
     vec3 newPosition = position + normal * noise * uDisplacement;
@@ -77,7 +79,6 @@ const vertexShader = `
   }
 `;
 
-// Fragment shader: blue/purple gradient + cyan glow
 const fragmentShader = `
   uniform float uTime;
   uniform vec3 uColor1;
@@ -91,25 +92,31 @@ const fragmentShader = `
   varying float vDisplacement;
 
   void main() {
-    // Fresnel for edge glow
     vec3 viewDir = normalize(cameraPosition - vPosition);
-    float fresnel = pow(1.0 - dot(viewDir, vNormal), 2.0);
+    // Gentle fresnel — not aggressive
+    float fresnel = pow(1.0 - max(dot(viewDir, vNormal), 0.0), 2.0);
 
-    // Base gradient
+    // Smooth gradient
     float gradient = (vPosition.y + 1.0) * 0.5;
-    vec3 baseColor = mix(uColor1, uColor2, gradient + vDisplacement * 0.3);
+    vec3 baseColor = mix(uColor1, uColor2, gradient + vDisplacement * 0.15);
 
-    // Alert color mix
+    // Alert overlay
     baseColor = mix(baseColor, uAlertColor, uAlertMix);
 
-    // Glow
+    // Subtle edge glow only
     vec3 glow = uGlowColor * fresnel * uGlowIntensity;
 
-    // Holographic shimmer
-    float shimmer = sin(vPosition.x * 10.0 + uTime * 2.0) * 0.05;
+    // Holographic iridescence — shifts with position + viewing angle
+    float iriBase = fresnel * 0.3 + 0.05;
+    float iriPhase = vPosition.y * 4.0 + vPosition.x * 3.0 + uTime * 0.6;
+    vec3 iriColor = vec3(
+      sin(iriPhase) * iriBase,
+      sin(iriPhase + 2.094) * iriBase,
+      sin(iriPhase + 4.189) * iriBase
+    );
 
-    vec3 finalColor = baseColor + glow + shimmer;
-    float alpha = 0.85 + fresnel * 0.15;
+    vec3 finalColor = baseColor + glow + iriColor;
+    float alpha = 0.9;
 
     gl_FragColor = vec4(finalColor, alpha);
   }
@@ -118,26 +125,39 @@ const fragmentShader = `
 export function createOrb(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.7;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   camera.position.z = 3;
 
-  // Orb uniforms
+  // Bloom — barely visible, just softens edges
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(canvas.clientWidth, canvas.clientHeight),
+    0.12,  // very subtle
+    1.0,   // wide radius for softness
+    0.8    // high threshold
+  );
+  composer.addPass(bloomPass);
+
+  // === Main Orb — desaturated colors ===
   const uniforms = {
     uTime: { value: 0 },
-    uDisplacement: { value: 0.15 },
+    uDisplacement: { value: 0.08 },   // subtle surface movement
     uScale: { value: 1.0 },
-    uColor1: { value: new THREE.Color(0x00F0FF) },   // Cyan
-    uColor2: { value: new THREE.Color(0xBD00FF) },   // Purple
-    uGlowColor: { value: new THREE.Color(0x00F0FF) }, // Cyan glow
-    uGlowIntensity: { value: 0.6 },
+    uColor1: { value: new THREE.Color(0x4A9EBF) },   // Muted teal (desaturated cyan)
+    uColor2: { value: new THREE.Color(0x6B4FA0) },   // Muted purple (desaturated)
+    uGlowColor: { value: new THREE.Color(0x5BB8D4) }, // Soft cyan glow
+    uGlowIntensity: { value: 0.3 },   // gentle
     uAlertMix: { value: 0.0 },
-    uAlertColor: { value: new THREE.Color(0xFF3366) }, // Red/orange alert
+    uAlertColor: { value: new THREE.Color(0xCC4466) }, // Muted red
   };
 
-  const geometry = new THREE.SphereGeometry(0.8, 64, 64);
+  const geometry = new THREE.SphereGeometry(0.75, 128, 128);
   const material = new THREE.ShaderMaterial({
     vertexShader,
     fragmentShader,
@@ -147,10 +167,36 @@ export function createOrb(canvas) {
   const mesh = new THREE.Mesh(geometry, material);
   scene.add(mesh);
 
-  // Sub orbs for team dispatch
+  // === Ambient particles — fewer, subtler ===
+  const ambientCount = 30;  // was 80, now 30
+  const ambientGeo = new THREE.BufferGeometry();
+  const ambientPos = new Float32Array(ambientCount * 3);
+  const ambientSpeeds = [];
+  for (let i = 0; i < ambientCount; i++) {
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = 1.1 + Math.random() * 0.6;
+    ambientPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+    ambientPos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+    ambientPos[i * 3 + 2] = r * Math.cos(phi);
+    ambientSpeeds.push(0.1 + Math.random() * 0.3);  // slower
+  }
+  ambientGeo.setAttribute('position', new THREE.BufferAttribute(ambientPos, 3));
+  const ambientMat = new THREE.PointsMaterial({
+    color: 0x5BB8D4,   // match glow color
+    size: 0.01,         // smaller
+    transparent: true,
+    opacity: 0.25,      // dimmer
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const ambientParticles = new THREE.Points(ambientGeo, ambientMat);
+  scene.add(ambientParticles);
+
+  // === Sub orbs for team dispatch ===
   const subOrbs = [];
   for (let i = 0; i < 3; i++) {
-    const subGeo = new THREE.SphereGeometry(0.25, 32, 32);
+    const subGeo = new THREE.SphereGeometry(0.2, 48, 48);
     const subMat = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
@@ -159,6 +205,7 @@ export function createOrb(canvas) {
           Object.entries(uniforms).map(([k, v]) => [k, { value: v.value instanceof THREE.Color ? v.value.clone() : v.value }])
         ),
         uScale: { value: 0.0 },
+        uDisplacement: { value: 0.06 },
       },
       transparent: true,
     });
@@ -168,8 +215,8 @@ export function createOrb(canvas) {
     subOrbs.push(subMesh);
   }
 
-  // Particle system for memory_save effect
-  const particleCount = 50;
+  // === Event particles (memory_save) — fewer ===
+  const particleCount = 30;  // was 60
   const particleGeo = new THREE.BufferGeometry();
   const particlePositions = new Float32Array(particleCount * 3);
   const particleVelocities = [];
@@ -181,30 +228,29 @@ export function createOrb(canvas) {
   }
   particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
   const particleMat = new THREE.PointsMaterial({
-    color: 0x00F0FF,
-    size: 0.03,
+    color: 0x5BB8D4,
+    size: 0.025,
     transparent: true,
     opacity: 0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
   });
   const particles = new THREE.Points(particleGeo, particleMat);
   scene.add(particles);
 
-  // Animation state
+  // === Animation state ===
   let currentAnimation = null;
   let animationTime = 0;
   const clock = new THREE.Clock();
-
-  // Target values for smooth transitions
   const targets = {
     scale: 1.0,
-    displacement: 0.15,
-    glowIntensity: 0.6,
+    displacement: 0.08,
+    glowIntensity: 0.3,
     alertMix: 0.0,
+    bloomStrength: 0.12,
   };
 
-  function lerp(current, target, speed) {
-    return current + (target - current) * speed;
-  }
+  function lerp(a, b, t) { return a + (b - a) * t; }
 
   function animate() {
     requestAnimationFrame(animate);
@@ -213,142 +259,167 @@ export function createOrb(canvas) {
     const elapsed = clock.getElapsedTime();
     uniforms.uTime.value = elapsed;
 
-    // Idle breathing
-    const breathe = Math.sin(elapsed * 0.8) * 0.03 + 1.0;
-    targets.scale = currentAnimation === 'idle' || !currentAnimation
-      ? breathe
-      : targets.scale;
+    // Very slow rotation
+    mesh.rotation.y = elapsed * 0.06;
+    mesh.rotation.x = Math.sin(elapsed * 0.03) * 0.05;
 
-    // Smooth transitions
-    uniforms.uScale.value = lerp(uniforms.uScale.value, targets.scale, 0.05);
-    uniforms.uDisplacement.value = lerp(uniforms.uDisplacement.value, targets.displacement, 0.05);
-    uniforms.uGlowIntensity.value = lerp(uniforms.uGlowIntensity.value, targets.glowIntensity, 0.05);
-    uniforms.uAlertMix.value = lerp(uniforms.uAlertMix.value, targets.alertMix, 0.05);
-
-    // Animation timeout — return to idle
-    if (currentAnimation && currentAnimation !== 'idle') {
-      animationTime -= delta;
-      if (animationTime <= 0) {
-        resetToIdle();
-      }
+    // Gentle breathing
+    const breathe = Math.sin(elapsed * 0.6) * 0.025 + 1.0;
+    if (!currentAnimation || currentAnimation === 'idle') {
+      targets.scale = breathe;
     }
 
-    // Update particles
-    updateParticles(delta);
+    // Smooth transitions (slower lerp = more graceful)
+    uniforms.uScale.value = lerp(uniforms.uScale.value, targets.scale, 0.03);
+    uniforms.uDisplacement.value = lerp(uniforms.uDisplacement.value, targets.displacement, 0.03);
+    uniforms.uGlowIntensity.value = lerp(uniforms.uGlowIntensity.value, targets.glowIntensity, 0.03);
+    uniforms.uAlertMix.value = lerp(uniforms.uAlertMix.value, targets.alertMix, 0.03);
+    bloomPass.strength = lerp(bloomPass.strength, targets.bloomStrength, 0.03);
 
-    renderer.render(scene, camera);
+    // Ambient particles — slow orbit
+    const aPos = ambientParticles.geometry.attributes.position.array;
+    for (let i = 0; i < ambientCount; i++) {
+      const speed = ambientSpeeds[i];
+      const x = aPos[i * 3];
+      const z = aPos[i * 3 + 2];
+      const angle = Math.atan2(z, x) + speed * delta * 0.15;
+      const r = Math.sqrt(x * x + z * z);
+      aPos[i * 3] = Math.cos(angle) * r;
+      aPos[i * 3 + 2] = Math.sin(angle) * r;
+    }
+    ambientParticles.geometry.attributes.position.needsUpdate = true;
+
+    // Sub orbs
+    subOrbs.forEach((s, i) => {
+      if (s.visible) {
+        s.material.uniforms.uTime.value = elapsed;
+      }
+    });
+
+    // Animation timeout
+    if (currentAnimation && currentAnimation !== 'idle') {
+      animationTime -= delta;
+      if (animationTime <= 0) resetToIdle();
+    }
+
+    updateParticles(delta);
+    composer.render();
   }
 
   function updateParticles(delta) {
-    const positions = particles.geometry.attributes.position.array;
+    const pos = particles.geometry.attributes.position.array;
     for (let i = 0; i < particleCount; i++) {
       const vel = particleVelocities[i];
-      positions[i * 3] += vel.x * delta;
-      positions[i * 3 + 1] += vel.y * delta;
-      positions[i * 3 + 2] += vel.z * delta;
-      // Pull toward center
-      positions[i * 3] *= 0.95;
-      positions[i * 3 + 1] *= 0.95;
-      positions[i * 3 + 2] *= 0.95;
+      pos[i * 3] += vel.x * delta;
+      pos[i * 3 + 1] += vel.y * delta;
+      pos[i * 3 + 2] += vel.z * delta;
+      pos[i * 3] *= 0.97;
+      pos[i * 3 + 1] *= 0.97;
+      pos[i * 3 + 2] *= 0.97;
     }
     particles.geometry.attributes.position.needsUpdate = true;
+    if (particleMat.opacity > 0) particleMat.opacity *= 0.985;
   }
 
   function emitParticles() {
-    const positions = particles.geometry.attributes.position.array;
-    particleMat.opacity = 0.8;
+    const pos = particles.geometry.attributes.position.array;
+    particleMat.opacity = 0.6;  // not too bright
     for (let i = 0; i < particleCount; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = 1.5 + Math.random() * 0.5;
-      positions[i * 3] = Math.cos(angle) * radius;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * radius;
-      positions[i * 3 + 2] = Math.sin(angle) * radius;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const r = 1.3 + Math.random() * 0.4;
+      pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      pos[i * 3 + 2] = r * Math.cos(phi);
       particleVelocities[i].set(
-        -positions[i * 3] * 2,
-        -positions[i * 3 + 1] * 2,
-        -positions[i * 3 + 2] * 2
+        -pos[i * 3] * 2,
+        -pos[i * 3 + 1] * 2,
+        -pos[i * 3 + 2] * 2
       );
     }
     particles.geometry.attributes.position.needsUpdate = true;
-    setTimeout(() => { particleMat.opacity = 0; }, 1500);
   }
 
   function resetToIdle() {
     currentAnimation = 'idle';
     targets.scale = 1.0;
-    targets.displacement = 0.15;
-    targets.glowIntensity = 0.6;
+    targets.displacement = 0.08;
+    targets.glowIntensity = 0.3;
     targets.alertMix = 0.0;
+    targets.bloomStrength = 0.12;
+    uniforms.uColor1.value.set(0x4A9EBF);
+    uniforms.uColor2.value.set(0x6B4FA0);
     subOrbs.forEach(s => { s.visible = false; });
   }
 
-  // Public API
   return {
     animate,
     triggerAnimation(type) {
       currentAnimation = type;
-      animationTime = 2.0; // seconds before returning to idle
+      animationTime = 2.5;
 
       switch (type) {
         case 'memory_save':
-          targets.glowIntensity = 1.2;
-          targets.displacement = 0.25;
+          targets.glowIntensity = 0.6;
+          targets.displacement = 0.14;
+          targets.bloomStrength = 0.2;
           emitParticles();
           break;
 
         case 'memory_contradict':
-          targets.alertMix = 0.8;
-          targets.displacement = 0.3;
-          targets.glowIntensity = 1.5;
+          targets.alertMix = 0.6;
+          targets.displacement = 0.18;
+          targets.glowIntensity = 0.5;
+          targets.bloomStrength = 0.25;
           animationTime = 3.0;
           break;
 
         case 'entity_update':
-          targets.displacement = 0.35;
-          targets.glowIntensity = 0.9;
+          targets.displacement = 0.16;
+          targets.glowIntensity = 0.45;
           break;
 
         case 'team_dispatch':
           targets.scale = 0.7;
           animationTime = 4.0;
-          const positions = [
-            [-1.2, 0.8, 0],
-            [1.2, 0.8, 0],
-            [0, -1.2, 0],
-          ];
+          const positions = [[-1.0, 0.6, 0], [1.0, 0.6, 0], [0, -0.9, 0]];
           subOrbs.forEach((s, i) => {
             s.visible = true;
-            s.material.uniforms.uScale.value = 0.8;
+            s.material.uniforms.uScale.value = 0.7;
             s.position.set(...positions[i]);
           });
           break;
 
         case 'team_result':
           subOrbs.forEach(s => {
-            s.position.set(0, 0, 0);
-            setTimeout(() => { s.visible = false; }, 800);
+            s.position.lerp(new THREE.Vector3(0, 0, 0), 0.1);
+            setTimeout(() => { s.visible = false; }, 1000);
           });
-          targets.scale = 1.1;
-          targets.glowIntensity = 1.3;
+          targets.scale = 1.08;
+          targets.glowIntensity = 0.5;
+          emitParticles();
           break;
 
         case 'context_compact':
-          targets.scale = 0.5;
-          targets.glowIntensity = 2.0;
-          animationTime = 1.5;
+          targets.scale = 0.55;
+          targets.glowIntensity = 0.7;
+          targets.displacement = 0.04;
+          targets.bloomStrength = 0.2;
+          animationTime = 2.0;
           break;
 
         case 'session_start':
-          targets.scale = 1.2;
-          targets.glowIntensity = 1.8;
-          targets.displacement = 0.3;
+          targets.scale = 1.12;
+          targets.glowIntensity = 0.6;
+          targets.displacement = 0.15;
+          targets.bloomStrength = 0.2;
           animationTime = 3.0;
+          emitParticles();
           break;
 
         case 'search':
-          uniforms.uColor1.value.set(0xBD00FF); // violet
-          targets.glowIntensity = 1.0;
-          setTimeout(() => { uniforms.uColor1.value.set(0x00F0FF); }, 1000);
+          uniforms.uColor1.value.set(0x7B5EA7);  // muted violet
+          targets.glowIntensity = 0.45;
           break;
 
         case 'idle':
@@ -359,6 +430,7 @@ export function createOrb(canvas) {
     },
     resize(w, h) {
       renderer.setSize(w, h);
+      composer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
     },

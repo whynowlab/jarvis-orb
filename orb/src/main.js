@@ -1,3 +1,4 @@
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { createOrb } from './orb.js';
 import { EventBridge } from './events.js';
 import { LogPanel } from './log.js';
@@ -8,8 +9,19 @@ const logPanel = new LogPanel(document.getElementById('log-panel'));
 const orb = createOrb(canvas);
 const bridge = new EventBridge(orb, logPanel);
 
-// Click to toggle log
-canvas.addEventListener('click', () => logPanel.toggle());
+// Window drag — manual implementation for decoration-less window
+const dragRegion = document.getElementById('drag-region');
+const appWindow = getCurrentWindow();
+
+dragRegion.addEventListener('mousedown', async (e) => {
+  if (e.detail === 2) {
+    // Double click → toggle log
+    logPanel.toggle();
+    return;
+  }
+  // Single click → start drag
+  await appWindow.startDragging();
+});
 
 // Keyboard demo (for development)
 document.addEventListener('keydown', (e) => {

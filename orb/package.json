@@ -13,7 +13,9 @@
   "license": "ISC",
   "packageManager": "pnpm@10.32.1",
   "dependencies": {
-    "three": "^0.183.2"
+    "@tauri-apps/api": "^2.10.1",
+    "three": "^0.183.2",
+    "three-stdlib": "^2.36.1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.10.1",
