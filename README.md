@@ -17,6 +17,8 @@
 [![License](https://img.shields.io/badge/license-MIT-white)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-white)](https://github.com/whynowlab/jarvis-orb/releases)
 
+**English** | [한국어](README.ko.md)
+
 </div>
 
 ---
