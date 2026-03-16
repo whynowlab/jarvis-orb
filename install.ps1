@@ -28,9 +28,19 @@ function Write-Step($msg) {
 # ── Header ──
 Write-Host ""
 Write-Host ""
-Write-Cyan "JARVIS ORB"
-Write-Info "AI Brain + Realtime Visualizer"
-Write-Info "v$Version"
+# Generate logo with oh-my-logo if npx available
+$hasNpx = Get-Command npx -ErrorAction SilentlyContinue
+if ($hasNpx) {
+    npx -y oh-my-logo "JARVIS" --palette-colors "#4A9EBF,#8EE4FF,#6B4FA0" --filled --block-font block -d diagonal --color 2>$null
+    Write-Host "                                  " -NoNewline
+    Write-Host "◉ ORB" -ForegroundColor Cyan
+    Write-Host "                                  " -NoNewline
+    Write-Host "AI Brain + Visualizer · v$Version" -ForegroundColor DarkGray
+} else {
+    Write-Host "  J A R V I S" -NoNewline -ForegroundColor Cyan
+    Write-Host "  ◉ ORB" -ForegroundColor White
+    Write-Host "  AI Brain + Visualizer · v$Version" -ForegroundColor DarkGray
+}
 Write-Host ""
 
 # ── Step 1: Environment ──
@@ -177,12 +187,22 @@ try {
 # ── Done ──
 Write-Host ""
 Write-Host ""
-Write-Host "  Installed." -ForegroundColor Green -NoNewline
+if ($hasNpx) {
+    npx -y oh-my-logo "JARVIS" --palette-colors "#8EE4FF,#B0F0FF,#8EE4FF" --filled --block-font block -d diagonal --color 2>$null
+    Write-Host "                                  " -NoNewline
+    Write-Host "◉ ORB" -NoNewline -ForegroundColor Green
+    Write-Host "  ONLINE" -ForegroundColor Green
+} else {
+    Write-Host "  J A R V I S" -NoNewline -ForegroundColor Green
+    Write-Host "  ◉ ORB  ONLINE" -ForegroundColor Green
+}
 Write-Host ""
+Write-Host "  I N S T A L L E D" -ForegroundColor Green
 Write-Host ""
 Write-Info "Brain   $BrainDir\brain.db"
 Write-Info "MCP     jarvis-brain"
 Write-Info "Orb     Jarvis Orb"
+Write-Info "CLI     jarvis-orb"
 Write-Host ""
 Write-Cyan "Your AI will start remembering."
 Write-Host ""

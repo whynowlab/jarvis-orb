@@ -88,7 +88,13 @@ def main():
     args = parser.parse_args()
 
     print()
-    print("  \033[36m\033[1mJARVIS ORB\033[0m")
+    print("  \033[2m          ·  ˚  ·\033[0m")
+    print("  \033[2m      · \033[36m⣠⣤⣤⣤⣄\033[2m ·\033[0m")
+    print("  \033[2m    ˚ \033[36m⣰⣿⣿⣿⣿⣿⣆\033[2m ˚\033[0m")
+    print("  \033[2m      · \033[36m⠻⣿⣿⣿⠟\033[2m ·\033[0m")
+    print("  \033[2m          ·  ˚  ·\033[0m")
+    print()
+    print("  \033[36m\033[1m  J A R V I S  O R B\033[0m")
     print()
 
     if args.brain or (not args.orb):

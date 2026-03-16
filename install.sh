@@ -13,25 +13,64 @@ GREEN='\033[32m'
 YELLOW='\033[33m'
 RED='\033[31m'
 WHITE='\033[97m'
-BG='\033[48;5;236m'
+HOLO='\033[38;2;142;228;255m'
 
 REPO="whynowlab/jarvis-orb"
-VERSION="0.1.0"
+VERSION="0.2.1"
 BRAIN_DIR="$HOME/.jarvis-orb"
 BRAIN_BIN="$BRAIN_DIR/bin"
 
-# ── Header ──
-echo ""
-echo ""
-echo -e "  ${CYAN}${B}JARVIS ORB${R}"
-echo -e "  ${DIM}AI Brain + Realtime Visualizer${R}"
-echo -e "  ${DIM}v${VERSION}${R}"
-echo ""
+# ── Logo ──
+show_logo() {
+  echo ""
+  # Generate logo with oh-my-logo if available, else fallback
+  if command -v npx &>/dev/null; then
+    npx -y oh-my-logo "JARVIS" --palette-colors "#4A9EBF,#8EE4FF,#6B4FA0" --filled --block-font block -d diagonal --color 2>/dev/null
+    echo -e "                                  ${HOLO}◉ ORB${R}"
+    echo -e "                                  ${DIM}AI Brain + Visualizer · v${VERSION}${R}"
+  else
+    echo -e "  ${CYAN}${B}J A R V I S${R}  ${HOLO}◉ ORB${R}"
+    echo -e "  ${DIM}AI Brain + Visualizer · v${VERSION}${R}"
+  fi
+  echo ""
+}
+
+show_logo_done() {
+  echo ""
+  if command -v npx &>/dev/null; then
+    npx -y oh-my-logo "JARVIS" --palette-colors "#8EE4FF,#B0F0FF,#8EE4FF" --filled --block-font block -d diagonal --color 2>/dev/null
+    echo -e "                                  ${GREEN}${B}◉ ORB${R}"
+    echo -e "                                  ${GREEN}ONLINE${R} ${DIM}· v${VERSION}${R}"
+  else
+    echo -e "  ${GREEN}${B}J A R V I S${R}  ${GREEN}◉ ORB${R}"
+    echo -e "  ${GREEN}ONLINE${R} ${DIM}· v${VERSION}${R}"
+  fi
+  echo ""
+}
+
+# ── Helpers ──
+STEP_NUM=0
+TOTAL_STEPS=4
+
+step() {
+  STEP_NUM=$((STEP_NUM + 1))
+  local filled=$((STEP_NUM * 20 / TOTAL_STEPS))
+  local empty=$((20 - filled))
+  local bar=""
+  for i in $(seq 1 $filled); do bar="${bar}█"; done
+  for i in $(seq 1 $empty); do bar="${bar}░"; done
+  echo ""
+  echo -e "  ${DIM}[${bar}] ${STEP_NUM}/${TOTAL_STEPS}${R}"
+  echo -e "  ${CYAN}→${R} ${B}$1${R}"
+}
+
+info() { echo -e "    ${DIM}$1${R}"; }
+ok() { echo -e "    ${GREEN}✓${R} $1"; }
+warn() { echo -e "    ${YELLOW}!${R} $1"; }
 
 # ── Detect ──
 OS="$(uname -s)"
 ARCH="$(uname -m)"
-
 case "$OS" in
   Darwin) PLATFORM="macos" ;;
   Linux)  PLATFORM="linux" ;;
@@ -39,50 +78,8 @@ case "$OS" in
   *) echo -e "  ${RED}Unsupported: $OS${R}"; exit 1 ;;
 esac
 
-STEP_NUM=0
-TOTAL_STEPS=4
-
-step() {
-  STEP_NUM=$((STEP_NUM + 1))
-  echo ""
-  # Progress bar
-  local filled=$((STEP_NUM * 20 / TOTAL_STEPS))
-  local empty=$((20 - filled))
-  local bar=""
-  for i in $(seq 1 $filled); do bar="${bar}█"; done
-  for i in $(seq 1 $empty); do bar="${bar}░"; done
-  echo -e "  ${DIM}[${bar}] ${STEP_NUM}/${TOTAL_STEPS}${R}"
-  echo -e "  ${CYAN}→${R} ${B}$1${R}"
-}
-
-info() {
-  echo -e "    ${DIM}$1${R}"
-}
-
-ok() {
-  echo -e "    ${GREEN}✓${R} $1"
-}
-
-warn() {
-  echo -e "    ${YELLOW}!${R} $1"
-}
-
-fail() {
-  echo -e "    ${RED}✗${R} $1"
-}
-
-spinner() {
-  local pid=$1
-  local msg=$2
-  local chars="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
-  local i=0
-  while kill -0 $pid 2>/dev/null; do
-    printf "\r    ${CYAN}${chars:$i:1}${R} ${DIM}${msg}${R}" >&2
-    i=$(( (i + 1) % ${#chars} ))
-    sleep 0.1
-  done
-  printf "\r                                          \r" >&2
-}
+# ── Start ──
+show_logo
 
 # ── Step 1: Environment ──
 step "Checking environment"
@@ -95,12 +92,8 @@ elif command -v pip3 &>/dev/null; then
   ok "pip3 found"
   PIP_CMD="pip3 install"
 else
-  warn "No Python package manager — Brain Lite requires uv or pip3"
+  warn "No Python package manager"
   PIP_CMD=""
-fi
-
-if command -v node &>/dev/null; then
-  ok "Node $(node -v)"
 fi
 
 # ── Step 2: Brain Lite ──
@@ -113,7 +106,6 @@ if [ -n "$PIP_CMD" ]; then
     ok "Dependencies installed" || warn "Dependency install failed"
 fi
 
-# Download Brain source
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 if [ -d "$SCRIPT_DIR/brain/jarvis_brain" ]; then
   cp -r "$SCRIPT_DIR/brain/jarvis_brain" "$BRAIN_DIR/jarvis_brain"
@@ -121,10 +113,9 @@ if [ -d "$SCRIPT_DIR/brain/jarvis_brain" ]; then
 else
   curl -fsSL "https://github.com/$REPO/archive/refs/heads/main.tar.gz" 2>/dev/null | \
     tar -xz --strip-components=2 -C "$BRAIN_DIR" "jarvis-orb-main/brain/jarvis_brain" 2>/dev/null && \
-    ok "Brain Lite downloaded" || warn "Download failed — install from source"
+    ok "Brain Lite downloaded" || warn "Download failed"
 fi
 
-# Launcher script
 cat > "$BRAIN_BIN/jarvis-brain" << 'EOF'
 #!/bin/bash
 export PYTHONPATH="$HOME/.jarvis-orb/lib:$HOME/.jarvis-orb"
@@ -140,7 +131,6 @@ EOF
 chmod +x "$BRAIN_BIN/jarvis-orb"
 ok "Commands → jarvis-orb, jarvis-brain"
 
-# Add to PATH if not already
 if [[ ":$PATH:" != *":$BRAIN_BIN:"* ]]; then
   SHELL_RC=""
   if [ -f "$HOME/.zshrc" ]; then SHELL_RC="$HOME/.zshrc"
@@ -179,17 +169,17 @@ try:
 except Exception as e:
     print(f'fail:{e}', file=sys.stderr)
     sys.exit(1)
-" 2>/dev/null && ok "MCP server registered in Claude Code" || {
-        info "Add to your Claude Code MCP config:"
+" 2>/dev/null && ok "MCP server registered" || {
+        info "Add to Claude Code MCP config:"
         echo -e "    ${WHITE}\"jarvis-brain\": { \"command\": \"$BRAIN_BIN/jarvis-brain\" }${R}"
       }
     else
-      info "Add to your Claude Code MCP config:"
+      info "Add to Claude Code MCP config:"
       echo -e "    ${WHITE}\"jarvis-brain\": { \"command\": \"$BRAIN_BIN/jarvis-brain\" }${R}"
     fi
   fi
 else
-  info "Claude Code not found — configure MCP manually after install"
+  info "Claude Code not found — configure MCP manually"
 fi
 
 # ── Step 4: Orb App ──
@@ -209,25 +199,16 @@ if [ "$PLATFORM" = "macos" ]; then
   else
     warn "No release found — build: cd orb && pnpm install && cargo tauri build"
   fi
-elif [ "$PLATFORM" = "windows" ]; then
-  LATEST=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null | \
-    grep "browser_download_url.*msi" | head -1 | cut -d'"' -f4)
-  if [ -n "$LATEST" ]; then
-    info "Download: $LATEST"
-    ok "Run the .msi installer after download"
-  else
-    warn "No Windows release yet"
-  fi
 fi
 
 # ── Done ──
-echo ""
-echo ""
-echo -e "  ${GREEN}${B}Installed.${R}"
-echo ""
+show_logo_done
+
 echo -e "  ${DIM}Brain${R}   ~/.jarvis-orb/brain.db"
 echo -e "  ${DIM}MCP${R}     jarvis-brain"
 echo -e "  ${DIM}Orb${R}     Jarvis Orb.app"
+echo -e "  ${DIM}CLI${R}     jarvis-orb"
 echo ""
 echo -e "  ${CYAN}Your AI will start remembering.${R}"
+echo -e "  ${DIM}Run ${WHITE}jarvis-orb${DIM} to begin.${R}"
 echo ""
