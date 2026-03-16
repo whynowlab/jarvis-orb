@@ -157,6 +157,13 @@ Jarvis Orb was extracted from a working AI control plane — **Jarvis** — runn
 
 ---
 
+## Roadmap
+
+- **Orb Customization** — Custom orb skins, color themes, animation profiles
+- **Brain Pro** — Advanced memory with full knowledge graph, multi-model routing, autonomous reasoning loop
+- **Auto-update** — Seamless in-app updates
+- **Plugin System** — Extend Brain with custom MCP tools
+
 ## Contributing
 
 PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
