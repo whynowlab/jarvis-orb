@@ -119,12 +119,29 @@ if [ -d "$CLAUDE_DIR" ]; then
   if grep -q "jarvis-brain" "$CLAUDE_SETTINGS" 2>/dev/null; then
     ok "Already configured"
   else
-    info "Add to your Claude Code MCP config:"
-    echo ""
-    echo -e "    ${WHITE}\"jarvis-brain\": {${R}"
-    echo -e "    ${WHITE}  \"command\": \"$BRAIN_BIN/jarvis-brain\"${R}"
-    echo -e "    ${WHITE}}${R}"
-    echo ""
+    if [ -f "$CLAUDE_SETTINGS" ] && command -v python3 &>/dev/null; then
+      python3 -c "
+import json, sys
+try:
+    with open('$CLAUDE_SETTINGS') as f:
+        s = json.load(f)
+    if 'mcpServers' not in s:
+        s['mcpServers'] = {}
+    s['mcpServers']['jarvis-brain'] = {'command': '$BRAIN_BIN/jarvis-brain'}
+    with open('$CLAUDE_SETTINGS', 'w') as f:
+        json.dump(s, f, indent=2, ensure_ascii=False)
+    print('done')
+except Exception as e:
+    print(f'fail:{e}', file=sys.stderr)
+    sys.exit(1)
+" 2>/dev/null && ok "MCP server registered in Claude Code" || {
+        info "Add to your Claude Code MCP config:"
+        echo -e "    ${WHITE}\"jarvis-brain\": { \"command\": \"$BRAIN_BIN/jarvis-brain\" }${R}"
+      }
+    else
+      info "Add to your Claude Code MCP config:"
+      echo -e "    ${WHITE}\"jarvis-brain\": { \"command\": \"$BRAIN_BIN/jarvis-brain\" }${R}"
+    fi
   fi
 else
   info "Claude Code not found — configure MCP manually after install"

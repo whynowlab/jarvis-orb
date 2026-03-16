@@ -80,19 +80,46 @@ Write-Ok "Brain launcher → $BrainBin\jarvis-brain.bat"
 # ── Step 3: Claude Code MCP ──
 Write-Step "Configuring Claude Code"
 
-$claudeSettings = "$env:USERPROFILE\.claude\settings.json"
+$claudeDir = "$env:USERPROFILE\.claude"
+$claudeSettings = "$claudeDir\settings.json"
+
 if (Test-Path $claudeSettings) {
     $content = Get-Content $claudeSettings -Raw
     if ($content -match "jarvis-brain") {
         Write-Ok "Already configured"
     } else {
-        Write-Info "Add to your Claude Code MCP config:"
-        Write-Host ""
-        Write-Host '    "jarvis-brain": {' -ForegroundColor White
-        Write-Host "      `"command`": `"$BrainBin\jarvis-brain.bat`"" -ForegroundColor White
-        Write-Host '    }' -ForegroundColor White
-        Write-Host ""
+        try {
+            $settings = $content | ConvertFrom-Json
+            # Add mcpServers if not exists
+            if (-not $settings.mcpServers) {
+                $settings | Add-Member -NotePropertyName "mcpServers" -NotePropertyValue @{} -Force
+            }
+            $brainCmd = "$BrainBin\jarvis-brain.bat"
+            $settings.mcpServers | Add-Member -NotePropertyName "jarvis-brain" -NotePropertyValue @{
+                command = $brainCmd
+            } -Force
+            $settings | ConvertTo-Json -Depth 10 | Set-Content $claudeSettings -Encoding UTF8
+            Write-Ok "MCP server registered in Claude Code"
+        } catch {
+            Write-Info "Add to your Claude Code MCP config:"
+            Write-Host ""
+            Write-Host '    "jarvis-brain": {' -ForegroundColor White
+            Write-Host "      `"command`": `"$BrainBin\jarvis-brain.bat`"" -ForegroundColor White
+            Write-Host '    }' -ForegroundColor White
+            Write-Host ""
+        }
     }
+} elseif (Test-Path $claudeDir) {
+    # settings.json doesn't exist but .claude dir does — create it
+    $newSettings = @{
+        mcpServers = @{
+            "jarvis-brain" = @{
+                command = "$BrainBin\jarvis-brain.bat"
+            }
+        }
+    }
+    $newSettings | ConvertTo-Json -Depth 10 | Set-Content $claudeSettings -Encoding UTF8
+    Write-Ok "Created Claude Code settings with MCP config"
 } else {
     Write-Info "Claude Code not found — configure MCP manually after install"
 }
