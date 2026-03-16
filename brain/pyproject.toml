@@ -1,0 +1,13 @@
+[project]
+name = "jarvis-brain"
+version = "0.1.0"
+description = "Lightweight AI memory brain with MCP server"
+requires-python = ">=3.11"
+dependencies = [
+    "aiosqlite>=0.20.0",
+    "fastmcp>=0.1.0",
+    "websockets>=12.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]

@@ -1,0 +1,10 @@
+node_modules/
+target/
+dist/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+*.db
+*.db-shm
+*.db-wal

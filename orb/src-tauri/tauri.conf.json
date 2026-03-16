@@ -1,0 +1,42 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicoptere/tauri/tauri-v2/tooling/cli/schema.json",
+  "productName": "Jarvis Orb",
+  "version": "0.1.0",
+  "identifier": "com.jarvis.orb",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Jarvis Orb",
+        "width": 220,
+        "height": 220,
+        "resizable": false,
+        "alwaysOnTop": true,
+        "decorations": false,
+        "transparent": true,
+        "center": false,
+        "x": 50,
+        "y": 50
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
