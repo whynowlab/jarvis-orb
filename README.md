@@ -1,21 +1,31 @@
 <div align="center">
 
-# Jarvis Orb
-
-### Watch it think.
-
-*A brain that remembers. An orb that breathes.*
-
 <br>
 
-<img src="assets/demo.gif" alt="Jarvis Orb Demo" width="320">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/assets/demo.gif">
+  <img src="https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/assets/demo.gif" alt="Jarvis Orb" width="280">
+</picture>
+
+<sub>Actual footage. Not a mockup.</sub>
 
 <br><br>
 
-[![GitHub Stars](https://img.shields.io/github/stars/whynowlab/jarvis-orb?style=flat&color=4A9EBF)](https://github.com/whynowlab/jarvis-orb/stargazers)
-[![Release](https://img.shields.io/github/v/release/whynowlab/jarvis-orb?color=6B4FA0)](https://github.com/whynowlab/jarvis-orb/releases)
-[![License](https://img.shields.io/badge/license-MIT-white)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-white)](https://github.com/whynowlab/jarvis-orb/releases)
+# Jarvis Orb
+
+### Not a tool. A presence.
+
+*It remembers your decisions. It tracks your world. It glows on your desktop, alive.*
+
+<br>
+
+[![Stars](https://img.shields.io/github/stars/whynowlab/jarvis-orb?style=flat&color=4A9EBF&label=Stars)](https://github.com/whynowlab/jarvis-orb/stargazers)
+[![Release](https://img.shields.io/github/v/release/whynowlab/jarvis-orb?color=6B4FA0&label=Release)](https://github.com/whynowlab/jarvis-orb/releases)
+[![License](https://img.shields.io/badge/License-MIT-white)](LICENSE)
+[![macOS](https://img.shields.io/badge/macOS-ready-white)]()
+[![Windows](https://img.shields.io/badge/Windows-ready-white)]()
+
+[Website](https://jarvis-brain-visualizer.vercel.app) · [Download](https://github.com/whynowlab/jarvis-orb/releases/latest) · [Report Bug](https://github.com/whynowlab/jarvis-orb/issues)
 
 **English** | [한국어](README.ko.md)
 
@@ -23,13 +33,24 @@
 
 ---
 
-Every session, your AI starts over. Your decisions, your preferences, your project context — gone.
+## The Problem
+
+Every session, your AI starts over. Your decisions, your preferences, your project context — gone. You explain yourself again. And again. And again.
+
+- "We decided to use SQLite." → Three days later, it suggests PostgreSQL.
+- "This PR was merged yesterday." → It doesn't know. It never remembers state.
+- "What was the architecture decision?" → Gone. The session ended.
+
+## The Solution
 
 **Jarvis Orb** gives your AI a persistent brain and shows its thought process as a living orb on your desktop.
 
-- **Brain Lite** — 4-tier memory, entity tracking, contradiction detection, temporal scoring
-- **Orb** — Always-on-top floating visualizer that reacts to brain events in real time
-- **MCP** — Works with Claude Code, Cursor, and any MCP-compatible tool
+| | Without Jarvis Orb | With Jarvis Orb |
+|---|---|---|
+| **Context** | Every session starts from zero | Carries over automatically |
+| **Decisions** | Reversed decisions come back | Contradictions detected and filtered |
+| **State** | "What's the status?" → guess | Exact state + transition history |
+| **Visibility** | No idea what it's thinking | Every thought, live on your screen |
 
 ## Install
 
@@ -43,37 +64,24 @@ curl -fsSL https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.s
 irm https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.ps1 | iex
 ```
 
-**Or download directly** → [Latest Release](https://github.com/whynowlab/jarvis-orb/releases/latest)
+**Or** → [Download directly](https://github.com/whynowlab/jarvis-orb/releases/latest)
 
-That's it. Brain starts, Orb floats, Claude Code connects.
+That's it. Brain starts. Orb floats. Claude Code connects.
 
-## How It Works
-
-```
-┌──────────────┐     MCP      ┌──────────────┐    WebSocket    ┌──────────┐
-│  Claude Code │ ──────────── │  Brain Lite   │ ──────────────  │   Orb    │
-│  / Cursor    │   tool calls │  (Python)     │    events       │ (Tauri)  │
-│              │              │               │                 │          │
-│  You work.   │              │  It remembers.│                 │ You see. │
-└──────────────┘              └──────────────┘                  └──────────┘
-                                    │
-                              ~/.jarvis-orb/
-                               brain.db (SQLite)
-```
-
-You work in Claude Code as usual. Brain Lite runs as an MCP server — saving memories, tracking entities, detecting contradictions. The Orb floats on your screen, reacting to every brain event in real time.
+---
 
 ## Brain Lite
 
-| Feature | Description |
-|---------|-------------|
-| **4-Tier Memory** | Episodic, semantic, project, procedural — auto-classified |
-| **Temporal Scoring** | Recent memories rank higher (30-day half-life decay) |
-| **Observation Metadata** | Every memory tagged: verified, stale, or contradicted |
-| **Contradiction Detection** | Conflicting memories auto-filtered from search results |
-| **Entity Tracking** | Projects, PRs, decisions tracked as objects with state history |
-| **Relationship Storage** | People → projects → decisions connected as a lightweight knowledge graph |
-| **FTS5 Search** | Full-text search across all memories |
+> Watch it think.
+
+| # | Feature | Description |
+|---|---------|-------------|
+| 01 | **4-Tier Memory** | Episodic, semantic, project, procedural — auto-classified and ranked by recency |
+| 02 | **Temporal Scoring** | 30-day half-life decay. Recent memories surface first. Old context fades naturally |
+| 03 | **Contradiction Detection** | Conflicting memories flagged. Superseded decisions marked stale. Only truth surfaces |
+| 04 | **Entity Tracking** | Projects, PRs, decisions tracked as objects with full state transition history |
+| 05 | **Relationship Storage** | People → projects → decisions connected as a lightweight knowledge graph |
+| 06 | **FTS5 Search** | Full-text search across all memories with observation filtering |
 
 ### MCP Tools
 
@@ -87,41 +95,73 @@ entity_query     Query entities by type or name
 entity_relate    Create relationships between entities
 ```
 
-## Orb Reactions
+Works with **Claude Code**, **Cursor**, and any MCP-compatible tool.
 
-The orb is not decorative. It shows you what the brain is doing.
+---
+
+## Orb
+
+> Every thought, visible.
+
+The orb is not decorative. It shows you what the brain is doing, in real time.
 
 | Brain Event | Orb Response |
 |------------|-------------|
 | Memory saved | Particles absorb into orb |
-| Contradiction detected | Red/orange pulse |
-| Entity state change | Cyan flash + scale pulse |
+| Contradiction detected | Red/orange pulse wave |
+| Entity state changed | Cyan flash + scale pulse |
 | Search executed | Violet color shift |
-| Context compressed | Orb shrinks then expands |
-| Session start | Wake-up glow |
+| Context compressed | Shrink, brighten, expand |
+| Team dispatched | Orb splits into sub-orbs |
 
-## Tech
+3MB desktop app. Always-on-top. Draggable. Click to see logs.
 
-| Layer | Tech | Why |
-|-------|------|-----|
-| Brain | Python, aiosqlite, FTS5 | Proven, zero-config, single file DB |
-| MCP | FastMCP (stdio) | Claude Code / Cursor native |
-| Orb | Tauri 2, Three.js, WebGL | 3MB not 150MB. Custom shaders. |
-| Connection | WebSocket | Real-time, bidirectional |
-| Build | GitHub Actions | macOS + Windows on every tag |
+---
 
-## Philosophy
+## In Practice
 
-Built from a real system. The author's personal AI control plane — Jarvis — runs 19 modules, a knowledge graph with 100+ entities, 500+ memories, and 22 agent teams. Jarvis Orb is the lightweight, open version of that brain.
+**Monday morning standup** — *"What did we work on last week?"*
+Brain searches episodic memories with temporal scoring. Returns a ranked summary. No digging through chat history.
 
-We believe AI should remember you, understand your context, and show you it's thinking. Not start over every session.
+**Mid-project contradiction** — *"We should use Redis for caching."*
+Brain detects this contradicts a previous decision. Flags the conflict. The orb pulses red. You see it happening.
+
+**New session, no context loss** — *"Continue where we left off."*
+Brain loads project state, recent decisions, and your preferences. No re-explaining.
+
+---
+
+## Architecture
+
+```
+Claude Code / Cursor
+     ↕  MCP (stdio)
+Brain Lite  —  Python · aiosqlite · FTS5 · ~/.jarvis-orb/brain.db
+     ↕  WebSocket
+Orb  —  Tauri · Three.js · WebGL · 3MB · Always-on-top
+```
+
+| | |
+|---|---|
+| **3MB** | App size. Not 150MB. |
+| **7** | MCP tools. Memory, entities, search. |
+| **0** | Cloud dependencies. Everything local. |
+
+---
+
+## Origin
+
+Jarvis Orb was extracted from a working AI control plane — **Jarvis** — running 19 modules, a knowledge graph with 100+ entities, 500+ memories, and 22 agent teams. This is the lightweight, open-source version of that brain.
+
+> *"I built a personal AI operating system. After months of using it, I realized the core — the brain and the visualization — should be available to everyone."*
+
+---
 
 ## Contributing
 
 PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
-# Dev setup
 git clone https://github.com/whynowlab/jarvis-orb.git
 cd jarvis-orb
 
@@ -142,12 +182,12 @@ MIT
 
 <div align="center">
 
-**Not a tool. A presence.**
-
-*It remembers your decisions. It tracks your world. It glows on your desktop, alive.*
-
 <br>
 
-[Install](https://github.com/whynowlab/jarvis-orb/releases/latest) · [Landing Page](https://jarvis-orb.vercel.app) · [Report Bug](https://github.com/whynowlab/jarvis-orb/issues)
+**Your AI will start remembering.**
+
+[Website](https://jarvis-brain-visualizer.vercel.app) · [Download](https://github.com/whynowlab/jarvis-orb/releases/latest) · [GitHub](https://github.com/whynowlab/jarvis-orb)
+
+<br>
 
 </div>
