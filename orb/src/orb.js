@@ -215,8 +215,8 @@ export function createOrb(canvas) {
     subOrbs.push(subMesh);
   }
 
-  // === Event particles (memory_save) — fewer ===
-  const particleCount = 30;  // was 60
+  // === Event particles (memory_save) ===
+  const particleCount = 50;
   const particleGeo = new THREE.BufferGeometry();
   const particlePositions = new Float32Array(particleCount * 3);
   const particleVelocities = [];
@@ -228,8 +228,8 @@ export function createOrb(canvas) {
   }
   particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
   const particleMat = new THREE.PointsMaterial({
-    color: 0x5BB8D4,
-    size: 0.025,
+    color: 0x80E0FF,
+    size: 0.05,
     transparent: true,
     opacity: 0,
     blending: THREE.AdditiveBlending,
@@ -313,28 +313,29 @@ export function createOrb(canvas) {
       pos[i * 3] += vel.x * delta;
       pos[i * 3 + 1] += vel.y * delta;
       pos[i * 3 + 2] += vel.z * delta;
-      pos[i * 3] *= 0.97;
-      pos[i * 3 + 1] *= 0.97;
-      pos[i * 3 + 2] *= 0.97;
+      pos[i * 3] *= 0.985;
+      pos[i * 3 + 1] *= 0.985;
+      pos[i * 3 + 2] *= 0.985;
     }
     particles.geometry.attributes.position.needsUpdate = true;
-    if (particleMat.opacity > 0) particleMat.opacity *= 0.985;
+    if (particleMat.opacity > 0) particleMat.opacity *= 0.992;
   }
 
   function emitParticles() {
     const pos = particles.geometry.attributes.position.array;
-    particleMat.opacity = 0.6;  // not too bright
+    particleMat.opacity = 0.8;
     for (let i = 0; i < particleCount; i++) {
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
-      const r = 1.3 + Math.random() * 0.4;
+      const r = 1.8 + Math.random() * 0.6;  // start farther out
       pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
       pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       pos[i * 3 + 2] = r * Math.cos(phi);
+      // Slower inward velocity — so you see the trajectory
       particleVelocities[i].set(
-        -pos[i * 3] * 2,
-        -pos[i * 3 + 1] * 2,
-        -pos[i * 3 + 2] * 2
+        -pos[i * 3] * 1.2,
+        -pos[i * 3 + 1] * 1.2,
+        -pos[i * 3 + 2] * 1.2
       );
     }
     particles.geometry.attributes.position.needsUpdate = true;
