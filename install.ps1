@@ -1,7 +1,7 @@
 # Jarvis Orb — Windows Installer (PowerShell)
 # Usage: irm https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.ps1 | iex
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "SilentlyContinue"
 $Version = "0.1.0"
 $Repo = "whynowlab/jarvis-orb"
 $BrainDir = "$env:USERPROFILE\.jarvis-orb"
