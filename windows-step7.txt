@@ -1,0 +1,1 @@
+claude mcp add jarvis-brain -e PYTHONPATH="C:\Users\user\.jarvis-orb\lib;C:\Users\user\.jarvis-orb" -- python -m jarvis_brain.mcp_server
