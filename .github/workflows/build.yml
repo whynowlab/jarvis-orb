@@ -58,12 +58,17 @@ jobs:
           releaseBody: |
             ## Jarvis Orb — AI Brain Visualizer
 
-            Install everything with one command:
+            ### Install
+
+            **macOS / Linux:**
             ```bash
             curl -fsSL https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.sh | bash
             ```
 
-            Or download the Orb app below and install Brain Lite separately.
+            **Windows (PowerShell):**
+            ```powershell
+            irm https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.ps1 | iex
+            ```
           releaseDraft: true
           args: --target ${{ matrix.target }}
 
