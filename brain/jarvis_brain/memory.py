@@ -6,6 +6,7 @@ Extracted from ~/.claude/jarvis/memory_compiler.py (lightweight).
 from __future__ import annotations
 
 import json
+import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,7 +14,7 @@ from typing import Any, List, Optional
 
 import aiosqlite
 
-from .config import DB_PATH
+from .config import DB_PATH, ensure_dirs
 from .schemas import MemoryEntry, MemoryType
 
 _CREATE_TABLE = """
@@ -87,8 +88,12 @@ class MemoryCompiler:
     async def __aexit__(self, *exc):
         await self.close()
 
+    def _ensure_db(self):
+        if self._db is None:
+            raise RuntimeError("Not initialized. Call initialize() first.")
+
     async def save(self, entry: MemoryEntry) -> None:
-        assert self._db
+        self._ensure_db()
         await self._db.execute(
             """INSERT OR REPLACE INTO memories
                (id, memory_type, content, project, tags, confidence,
@@ -105,7 +110,7 @@ class MemoryCompiler:
 
     async def query(self, memory_type: Optional[MemoryType] = None,
                     project: Optional[str] = None, limit: int = 50) -> List[MemoryEntry]:
-        assert self._db
+        self._ensure_db()
         clauses, params = [], []
         if memory_type:
             clauses.append("memory_type = ?"); params.append(memory_type.value)
@@ -117,16 +122,46 @@ class MemoryCompiler:
         cursor = await self._db.execute(sql, params)
         return [self._row_to_entry(r) for r in await cursor.fetchall()]
 
+    @staticmethod
+    def _sanitize_fts_query(query: str) -> str:
+        """Sanitize user input for FTS5 MATCH: strip special syntax, keep words."""
+        # Remove FTS5 special chars: " ( ) * : ^
+        cleaned = re.sub(r'[":()^*]', ' ', query)
+        # Collapse whitespace
+        tokens = cleaned.split()
+        if not tokens:
+            return '""'
+        # Join as space-separated terms (implicit AND in FTS5)
+        return " ".join(tokens)
+
     async def search(self, query: str, limit: int = 20) -> List[MemoryEntry]:
-        assert self._db
+        self._ensure_db()
+        safe_query = self._sanitize_fts_query(query)
+        if not safe_query:
+            return []
         sql = """SELECT m.* FROM memories m
-                 JOIN memories_fts fts ON m.rowid = fts.rowid
-                 WHERE memories_fts MATCH ? ORDER BY rank LIMIT ?"""
-        cursor = await self._db.execute(sql, (query, limit))
-        return [self._row_to_entry(r) for r in await cursor.fetchall()]
+                 WHERE m.rowid IN (
+                     SELECT rowid FROM memories_fts WHERE memories_fts MATCH ?
+                 )
+                 ORDER BY m.created_at DESC LIMIT ?"""
+        try:
+            cursor = await self._db.execute(sql, (safe_query, min(limit, 100)))
+            return [self._row_to_entry(r) for r in await cursor.fetchall()]
+        except Exception:
+            return []
+
+    async def delete_by_ids(self, ids: List[str]) -> int:
+        """Delete memories by their IDs."""
+        self._ensure_db()
+        if not ids:
+            return 0
+        placeholders = ",".join("?" for _ in ids)
+        await self._db.execute(f"DELETE FROM memories WHERE id IN ({placeholders})", ids)
+        await self._db.commit()
+        return len(ids)
 
     async def supersede(self, old_id: str, new_id: str) -> None:
-        assert self._db
+        self._ensure_db()
         now = datetime.now(timezone.utc).isoformat()
         await self._db.execute(
             "UPDATE memories SET superseded_by=?, verification_status='stale', last_validated=? WHERE id=?",
@@ -134,7 +169,7 @@ class MemoryCompiler:
         await self._db.commit()
 
     async def contradict(self, id_a: str, id_b: str) -> None:
-        assert self._db
+        self._ensure_db()
         now = datetime.now(timezone.utc).isoformat()
         await self._db.execute(
             "UPDATE memories SET contradicted_by=?, verification_status='contradicted', last_validated=? WHERE id=?",
@@ -145,7 +180,7 @@ class MemoryCompiler:
         await self._db.commit()
 
     async def verify(self, memory_id: str) -> None:
-        assert self._db
+        self._ensure_db()
         now = datetime.now(timezone.utc).isoformat()
         await self._db.execute(
             "UPDATE memories SET verification_status='verified', last_validated=? WHERE id=?",

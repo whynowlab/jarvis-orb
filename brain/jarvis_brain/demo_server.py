@@ -33,7 +33,7 @@ EVENTS = [
 ]
 
 
-async def handler(ws: WebSocketServerProtocol, path: str = "/"):
+async def handler(ws: WebSocketServerProtocol):
     clients.add(ws)
     print(f"[Orb connected] ({len(clients)} clients)")
     try:

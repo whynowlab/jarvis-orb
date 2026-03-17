@@ -47,7 +47,7 @@ def start_brain(demo=False):
     sep = ";" if platform.system() == "Windows" else ":"
     pythonpath = f"{lib_dir}{sep}{brain_dir}"
 
-    module = "jarvis_brain.demo_server" if demo else "jarvis_brain.demo_server"
+    module = "jarvis_brain.demo_server" if demo else "jarvis_brain.mcp_server"
     python = "python" if platform.system() == "Windows" else "python3"
 
     env = os.environ.copy()
@@ -97,9 +97,14 @@ def main():
     print("  \033[36m\033[1m  J A R V I S  O R B\033[0m")
     print()
 
-    if args.brain or (not args.orb):
+    # Determine what to run
+    run_brain = args.brain or args.demo or (not args.orb)
+    run_orb = args.orb or (not args.brain and not args.demo)
+
+    brain_proc = None
+    if run_brain:
         mode = "demo" if args.demo else "brain"
-        print(f"  \033[32m✓\033[0m Brain starting...")
+        print(f"  \033[32m✓\033[0m Brain starting ({mode})...")
         brain_proc = start_brain(demo=args.demo)
         time.sleep(1)
         if brain_proc.poll() is None:
@@ -108,7 +113,7 @@ def main():
             print(f"  \033[31m✗\033[0m Brain failed to start")
             return
 
-    if args.orb or (not args.brain):
+    if run_orb:
         print(f"  \033[32m✓\033[0m Opening Orb...")
         path = open_orb()
         if path:
@@ -123,6 +128,9 @@ def main():
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
+        if brain_proc and brain_proc.poll() is None:
+            brain_proc.terminate()
+            brain_proc.wait(timeout=5)
         print("\n  Stopped.")
 
 

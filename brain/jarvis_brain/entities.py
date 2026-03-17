@@ -85,9 +85,13 @@ class EntityStore:
     async def __aexit__(self, *exc):
         await self.close()
 
+    def _ensure_db(self):
+        if self._db is None:
+            raise RuntimeError("Not initialized. Call initialize() first.")
+
     async def create(self, entity_type: str, name: str,
                      initial_state: Dict[str, Any] = None) -> Entity:
-        assert self._db
+        self._ensure_db()
         now = datetime.now(timezone.utc).isoformat()
         entity = Entity(
             id=str(uuid.uuid4())[:8], entity_type=entity_type, name=name,
@@ -101,7 +105,7 @@ class EntityStore:
         return entity
 
     async def get(self, entity_id: str) -> Optional[Entity]:
-        assert self._db
+        self._ensure_db()
         cursor = await self._db.execute("SELECT * FROM entities WHERE id=?", (entity_id,))
         row = await cursor.fetchone()
         if not row:
@@ -111,7 +115,7 @@ class EntityStore:
                       created_at=row["created_at"], last_updated=row["last_updated"])
 
     async def update_state(self, entity_id: str, new_state: Dict[str, Any], reason: str = "") -> None:
-        assert self._db
+        self._ensure_db()
         entity = await self.get(entity_id)
         if not entity:
             raise ValueError(f"Entity not found: {entity_id}")
@@ -126,7 +130,7 @@ class EntityStore:
         await self._db.commit()
 
     async def get_history(self, entity_id: str) -> List[EntityTransition]:
-        assert self._db
+        self._ensure_db()
         cursor = await self._db.execute(
             "SELECT * FROM entity_transitions WHERE entity_id=? ORDER BY timestamp", (entity_id,))
         rows = await cursor.fetchall()
@@ -135,7 +139,7 @@ class EntityStore:
                 reason=r["reason"], timestamp=r["timestamp"]) for r in rows]
 
     async def link_memory(self, entity_id: str, memory_id: str) -> None:
-        assert self._db
+        self._ensure_db()
         now = datetime.now(timezone.utc).isoformat()
         await self._db.execute(
             "INSERT OR IGNORE INTO entity_memory_links (entity_id, memory_id, linked_at) VALUES (?,?,?)",
@@ -143,14 +147,14 @@ class EntityStore:
         await self._db.commit()
 
     async def get_linked_memories(self, entity_id: str) -> List[str]:
-        assert self._db
+        self._ensure_db()
         cursor = await self._db.execute(
             "SELECT memory_id FROM entity_memory_links WHERE entity_id=?", (entity_id,))
         return [r["memory_id"] for r in await cursor.fetchall()]
 
     async def add_relationship(self, subject_id: str, predicate: str,
                                 object_id: str, confidence: float = 1.0) -> Relationship:
-        assert self._db
+        self._ensure_db()
         now = datetime.now(timezone.utc).isoformat()
         rel = Relationship(id=str(uuid.uuid4())[:8], subject_id=subject_id,
                            predicate=predicate, object_id=object_id,
@@ -162,7 +166,7 @@ class EntityStore:
         return rel
 
     async def get_relationships(self, entity_id: str) -> List[Relationship]:
-        assert self._db
+        self._ensure_db()
         cursor = await self._db.execute(
             "SELECT * FROM relationships WHERE subject_id=? OR object_id=?",
             (entity_id, entity_id))
@@ -172,7 +176,7 @@ class EntityStore:
 
     async def query(self, entity_type: str = None, name: str = None,
                     limit: int = 50) -> List[Entity]:
-        assert self._db
+        self._ensure_db()
         clauses, params = [], []
         if entity_type:
             clauses.append("entity_type=?"); params.append(entity_type)

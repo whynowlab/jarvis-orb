@@ -36,7 +36,7 @@ class EventEmitter:
             self._server.close()
             await self._server.wait_closed()
 
-    async def _handler(self, ws: WebSocketServerProtocol, path: str = "/") -> None:
+    async def _handler(self, ws: WebSocketServerProtocol) -> None:
         self._clients.add(ws)
         logger.info("Orb connected (%d clients)", len(self._clients))
         try:

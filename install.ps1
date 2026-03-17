@@ -1,8 +1,8 @@
 # Jarvis Orb — Windows Installer (PowerShell)
 # Usage: irm https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.ps1 | iex
 
-$ErrorActionPreference = "SilentlyContinue"
-$Version = "0.1.0"
+$ErrorActionPreference = "Continue"
+$Version = "0.3.1"
 $Repo = "whynowlab/jarvis-orb"
 $BrainDir = "$env:USERPROFILE\.jarvis-orb"
 $BrainBin = "$BrainDir\bin"
@@ -63,7 +63,12 @@ New-Item -ItemType Directory -Force -Path $BrainBin | Out-Null
 if ($hasPython) {
     Write-Info "Installing dependencies..."
     $pipOutput = python -m pip install --target "$BrainDir\lib" aiosqlite websockets mcp 2>&1
-    Write-Ok "Dependencies installed"
+    if ($LASTEXITCODE -eq 0) {
+        Write-Ok "Dependencies installed"
+    } else {
+        Write-Warn "Dependency install failed — check Python/pip"
+        Write-Info ($pipOutput | Out-String)
+    }
 }
 
 # Download Brain source

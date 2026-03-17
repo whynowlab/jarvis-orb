@@ -56,10 +56,15 @@ async def _emit(event_type: str, label: str, **extra):
             pass
 
 
+_VALID_MEMORY_TYPES = {t.value for t in MemoryType}
+
+
 @mcp.tool()
 async def memory_save(content: str, memory_type: str = "episodic",
                       project: str = "", tags: str = "", source: str = "") -> str:
     """Save a memory to the brain. Types: episodic, semantic, project, procedural."""
+    if memory_type not in _VALID_MEMORY_TYPES:
+        return f"Error: invalid memory_type '{memory_type}'. Valid: {', '.join(_VALID_MEMORY_TYPES)}"
     await _ensure_init()
     tag_list = [t.strip() for t in tags.split(",") if t.strip()] if tags else []
     entry = MemoryEntry(
@@ -75,8 +80,11 @@ async def memory_save(content: str, memory_type: str = "episodic",
 @mcp.tool()
 async def memory_search(query: str, limit: int = 10) -> str:
     """Search memories with temporal scoring + observation filtering."""
+    if not query.strip():
+        return "Error: empty query."
     await _ensure_init()
-    results = await _memory.search(query, limit=limit)
+    clamped_limit = max(1, min(limit, 100))
+    results = await _memory.search(query, limit=clamped_limit)
     filtered = [r for r in results
                 if r.verification_status not in ("contradicted",)
                 and r.superseded_by is None]
@@ -111,7 +119,10 @@ async def memory_verify(memory_id: str, action: str = "verify") -> str:
 async def entity_create(entity_type: str, name: str, state: str = "{}") -> str:
     """Create an entity (person, project, decision, tool, etc.)."""
     await _ensure_init()
-    initial_state = json.loads(state) if state else {}
+    try:
+        initial_state = json.loads(state) if state else {}
+    except json.JSONDecodeError as e:
+        return f"Error: invalid JSON for state — {e}"
     entity = await _entities.create(entity_type, name, initial_state)
     await _emit("entity_update", f"Created: {name} ({entity_type})")
     return f"Entity {entity.id}: {name} ({entity_type})"
@@ -121,7 +132,10 @@ async def entity_create(entity_type: str, name: str, state: str = "{}") -> str:
 async def entity_update(entity_id: str, new_state: str, reason: str = "") -> str:
     """Update entity state. Records transition history."""
     await _ensure_init()
-    state = json.loads(new_state)
+    try:
+        state = json.loads(new_state)
+    except json.JSONDecodeError as e:
+        return f"Error: invalid JSON for new_state — {e}"
     await _entities.update_state(entity_id, state, reason)
     entity = await _entities.get(entity_id)
     label = f"{entity.name}: {reason}" if entity else f"{entity_id}: {reason}"
