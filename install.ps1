@@ -2,7 +2,7 @@
 # Usage: irm https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
-$Version = "0.3.2"
+$Version = "0.3.3"
 $Repo = "whynowlab/jarvis-orb"
 $BrainDir = "$env:USERPROFILE\.jarvis-orb"
 $BrainBin = "$BrainDir\bin"

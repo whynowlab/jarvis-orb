@@ -16,7 +16,7 @@ WHITE='\033[97m'
 HOLO='\033[38;2;142;228;255m'
 
 REPO="whynowlab/jarvis-orb"
-VERSION="0.3.2"
+VERSION="0.3.3"
 BRAIN_DIR="$HOME/.jarvis-orb"
 BRAIN_BIN="$BRAIN_DIR/bin"
 

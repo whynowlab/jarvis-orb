@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicoptere/tauri/tauri-v2/tooling/cli/schema.json",
   "productName": "Jarvis Orb",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "identifier": "com.jarvis.orb",
   "build": {
     "frontendDist": "../dist",
