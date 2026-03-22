@@ -177,15 +177,17 @@ class EntityStore:
     async def query(self, entity_type: str = None, name: str = None,
                     limit: int = 50) -> List[Entity]:
         self._ensure_db()
+        # Allowlisted filters only — column names are never from user input
         clauses, params = [], []
         if entity_type:
             clauses.append("entity_type=?"); params.append(entity_type)
         if name:
             clauses.append("name=?"); params.append(name)
         where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+        clamped = max(1, min(limit, 200))
         cursor = await self._db.execute(
             f"SELECT * FROM entities {where} ORDER BY last_updated DESC LIMIT ?",
-            params + [limit])
+            params + [clamped])
         rows = await cursor.fetchall()
         return [Entity(id=r["id"], entity_type=r["entity_type"], name=r["name"],
                 current_state=json.loads(r["current_state"]),

@@ -72,6 +72,29 @@ jobs:
           releaseDraft: true
           args: --target ${{ matrix.target }}
 
+  checksums:
+    needs: build-orb
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download ${{ github.ref_name }} --repo ${{ github.repository }} --dir assets || true
+
+      - name: Generate SHA256SUMS
+        run: |
+          if ls assets/* 1>/dev/null 2>&1; then
+            cd assets && shasum -a 256 * > SHA256SUMS
+          fi
+
+      - name: Upload SHA256SUMS
+        if: hashFiles('assets/SHA256SUMS') != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} assets/SHA256SUMS --repo ${{ github.repository }} --clobber
+
   build-brain:
     strategy:
       matrix:

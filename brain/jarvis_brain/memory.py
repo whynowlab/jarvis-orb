@@ -111,14 +111,16 @@ class MemoryCompiler:
     async def query(self, memory_type: Optional[MemoryType] = None,
                     project: Optional[str] = None, limit: int = 50) -> List[MemoryEntry]:
         self._ensure_db()
+        # Allowlisted filters only — column names are never from user input
         clauses, params = [], []
         if memory_type:
             clauses.append("memory_type = ?"); params.append(memory_type.value)
         if project:
             clauses.append("project = ?"); params.append(project)
         where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+        clamped = max(1, min(limit, 200))
         sql = f"SELECT * FROM memories {where} ORDER BY created_at DESC LIMIT ?"
-        params.append(limit)
+        params.append(clamped)
         cursor = await self._db.execute(sql, params)
         return [self._row_to_entry(r) for r in await cursor.fetchall()]
 

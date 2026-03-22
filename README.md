@@ -68,6 +68,53 @@ irm https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.ps1 | ie
 
 That's it. Brain starts. Orb floats. Claude Code connects.
 
+**Verify your install:**
+```bash
+jarvis-orb --doctor
+```
+
+### Supported Platforms
+
+| Platform | Brain (MCP) | Orb (Desktop) |
+|----------|-------------|---------------|
+| macOS Apple Silicon (M1+) | Yes | Yes |
+| macOS Intel | Yes | Yes |
+| Windows x64 | Yes | Yes |
+| Linux | Yes | Not yet |
+
+### Cursor / Windsurf Setup
+
+Add to your MCP config (`~/.cursor/mcp.json` or equivalent):
+```json
+{
+  "mcpServers": {
+    "jarvis-brain": {
+      "command": "python3",
+      "args": ["-m", "jarvis_brain.mcp_server"],
+      "env": {
+        "PYTHONPATH": "~/.jarvis-orb/lib:~/.jarvis-orb"
+      }
+    }
+  }
+}
+```
+
+### Uninstall
+
+```bash
+# Remove Brain + data
+rm -rf ~/.jarvis-orb
+
+# Remove from Claude Code
+claude mcp remove jarvis-brain
+
+# Remove Orb app (macOS)
+rm -rf "/Applications/Jarvis Orb.app"
+
+# Remove PATH entry from ~/.zshrc or ~/.bashrc
+# Delete the line: export PATH="$HOME/.jarvis-orb/bin:$PATH"
+```
+
 ---
 
 ## Brain Lite
