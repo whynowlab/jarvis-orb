@@ -16,35 +16,22 @@ WHITE='\033[97m'
 HOLO='\033[38;2;142;228;255m'
 
 REPO="whynowlab/jarvis-orb"
-VERSION="0.3.1"
+VERSION="0.3.2"
 BRAIN_DIR="$HOME/.jarvis-orb"
 BRAIN_BIN="$BRAIN_DIR/bin"
 
 # ── Logo ──
 show_logo() {
   echo ""
-  # Generate logo with oh-my-logo if available, else fallback
-  if command -v npx &>/dev/null; then
-    npx -y oh-my-logo "JARVIS" --palette-colors "#4A9EBF,#8EE4FF,#6B4FA0" --filled --block-font block -d diagonal --color 2>/dev/null
-    echo -e "                                  ${HOLO}◉ ORB${R}"
-    echo -e "                                  ${DIM}AI Brain + Visualizer · v${VERSION}${R}"
-  else
-    echo -e "  ${CYAN}${B}J A R V I S${R}  ${HOLO}◉ ORB${R}"
-    echo -e "  ${DIM}AI Brain + Visualizer · v${VERSION}${R}"
-  fi
+  echo -e "  ${CYAN}${B}J A R V I S${R}  ${HOLO}◉ ORB${R}"
+  echo -e "  ${DIM}AI Brain + Visualizer · v${VERSION}${R}"
   echo ""
 }
 
 show_logo_done() {
   echo ""
-  if command -v npx &>/dev/null; then
-    npx -y oh-my-logo "JARVIS" --palette-colors "#8EE4FF,#B0F0FF,#8EE4FF" --filled --block-font block -d diagonal --color 2>/dev/null
-    echo -e "                                  ${GREEN}${B}◉ ORB${R}"
-    echo -e "                                  ${GREEN}ONLINE${R} ${DIM}· v${VERSION}${R}"
-  else
-    echo -e "  ${GREEN}${B}J A R V I S${R}  ${GREEN}◉ ORB${R}"
-    echo -e "  ${GREEN}ONLINE${R} ${DIM}· v${VERSION}${R}"
-  fi
+  echo -e "  ${GREEN}${B}J A R V I S${R}  ${GREEN}◉ ORB${R}"
+  echo -e "  ${GREEN}INSTALLED${R} ${DIM}· v${VERSION}${R}"
   echo ""
 }
 
@@ -93,6 +80,22 @@ show_logo
 step "Checking environment"
 info "$OS $ARCH"
 
+# Python version check
+if ! command -v python3 &>/dev/null; then
+  echo -e "  ${RED}Python 3 not found. Install Python 3.11+ first.${R}"
+  exit 1
+fi
+
+PY_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null)
+PY_MAJOR=$(echo "$PY_VERSION" | cut -d. -f1)
+PY_MINOR=$(echo "$PY_VERSION" | cut -d. -f2)
+
+if [ "$PY_MAJOR" -lt 3 ] || ([ "$PY_MAJOR" -eq 3 ] && [ "$PY_MINOR" -lt 11 ]); then
+  echo -e "  ${RED}Python 3.11+ required (found $PY_VERSION).${R}"
+  exit 1
+fi
+ok "Python $PY_VERSION"
+
 if command -v uv &>/dev/null; then
   ok "uv found"
   PIP_CMD="uv pip install"
@@ -100,19 +103,21 @@ elif command -v pip3 &>/dev/null; then
   ok "pip3 found"
   PIP_CMD="pip3 install"
 else
-  warn "No Python package manager"
-  PIP_CMD=""
+  echo -e "  ${RED}No Python package manager (pip3 or uv) found.${R}"
+  exit 1
 fi
 
 # ── Step 2: Brain Lite ──
 step "Installing Brain Lite"
 
 mkdir -p "$BRAIN_DIR" "$BRAIN_BIN"
+chmod 700 "$BRAIN_DIR"
 
-if [ -n "$PIP_CMD" ]; then
-  $PIP_CMD --target "$BRAIN_DIR/lib" aiosqlite websockets mcp >/dev/null 2>&1 && \
-    ok "Dependencies installed" || warn "Dependency install failed"
+if ! $PIP_CMD --target "$BRAIN_DIR/lib" aiosqlite websockets mcp >/dev/null 2>&1; then
+  echo -e "  ${RED}Dependency install failed. Check your Python/pip setup.${R}"
+  exit 1
 fi
+ok "Dependencies installed"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 if [ -d "$SCRIPT_DIR/brain/jarvis_brain" ]; then

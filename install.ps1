@@ -1,8 +1,8 @@
 # Jarvis Orb — Windows Installer (PowerShell)
 # Usage: irm https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.ps1 | iex
 
-$ErrorActionPreference = "Continue"
-$Version = "0.3.1"
+$ErrorActionPreference = "Stop"
+$Version = "0.3.2"
 $Repo = "whynowlab/jarvis-orb"
 $BrainDir = "$env:USERPROFILE\.jarvis-orb"
 $BrainBin = "$BrainDir\bin"
@@ -28,19 +28,9 @@ function Write-Step($msg) {
 # ── Header ──
 Write-Host ""
 Write-Host ""
-# Generate logo with oh-my-logo if npx available
-$hasNpx = Get-Command npx -ErrorAction SilentlyContinue
-if ($hasNpx) {
-    npx -y oh-my-logo "JARVIS" --palette-colors "#4A9EBF,#8EE4FF,#6B4FA0" --filled --block-font block -d diagonal --color 2>$null
-    Write-Host "                                  " -NoNewline
-    Write-Host "◉ ORB" -ForegroundColor Cyan
-    Write-Host "                                  " -NoNewline
-    Write-Host "AI Brain + Visualizer · v$Version" -ForegroundColor DarkGray
-} else {
-    Write-Host "  J A R V I S" -NoNewline -ForegroundColor Cyan
-    Write-Host "  ◉ ORB" -ForegroundColor White
-    Write-Host "  AI Brain + Visualizer · v$Version" -ForegroundColor DarkGray
-}
+Write-Host "  J A R V I S" -NoNewline -ForegroundColor Cyan
+Write-Host "  ◉ ORB" -ForegroundColor White
+Write-Host "  AI Brain + Visualizer · v$Version" -ForegroundColor DarkGray
 Write-Host ""
 
 # ── Step 1: Environment ──
@@ -48,11 +38,18 @@ Write-Step "Checking environment"
 Write-Info "Windows $([System.Environment]::OSVersion.Version)"
 
 $hasPython = Get-Command python -ErrorAction SilentlyContinue
-if ($hasPython) {
-    Write-Ok "Python found: $(python --version 2>&1)"
-} else {
-    Write-Warn "Python not found — Brain Lite requires Python 3.11+"
+if (-not $hasPython) {
+    Write-Host "  Python not found. Install Python 3.11+ first." -ForegroundColor Red
+    exit 1
 }
+
+$pyVersion = python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>&1
+$pyParts = $pyVersion -split '\.'
+if ([int]$pyParts[0] -lt 3 -or ([int]$pyParts[0] -eq 3 -and [int]$pyParts[1] -lt 11)) {
+    Write-Host "  Python 3.11+ required (found $pyVersion)." -ForegroundColor Red
+    exit 1
+}
+Write-Ok "Python $pyVersion"
 
 # ── Step 2: Brain Lite ──
 Write-Step "Installing Brain Lite"
@@ -60,16 +57,14 @@ Write-Step "Installing Brain Lite"
 New-Item -ItemType Directory -Force -Path $BrainDir | Out-Null
 New-Item -ItemType Directory -Force -Path $BrainBin | Out-Null
 
-if ($hasPython) {
-    Write-Info "Installing dependencies..."
-    $pipOutput = python -m pip install --target "$BrainDir\lib" aiosqlite websockets mcp 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        Write-Ok "Dependencies installed"
-    } else {
-        Write-Warn "Dependency install failed — check Python/pip"
-        Write-Info ($pipOutput | Out-String)
-    }
+Write-Info "Installing dependencies..."
+$pipOutput = python -m pip install --target "$BrainDir\lib" aiosqlite websockets mcp 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  Dependency install failed. Check your Python/pip setup." -ForegroundColor Red
+    Write-Info ($pipOutput | Out-String)
+    exit 1
 }
+Write-Ok "Dependencies installed"
 
 # Download Brain source
 Write-Info "Downloading Brain Lite..."
@@ -165,15 +160,8 @@ try {
 # ── Done ──
 Write-Host ""
 Write-Host ""
-if ($hasNpx) {
-    npx -y oh-my-logo "JARVIS" --palette-colors "#8EE4FF,#B0F0FF,#8EE4FF" --filled --block-font block -d diagonal --color 2>$null
-    Write-Host "                                  " -NoNewline
-    Write-Host "◉ ORB" -NoNewline -ForegroundColor Green
-    Write-Host "  ONLINE" -ForegroundColor Green
-} else {
-    Write-Host "  J A R V I S" -NoNewline -ForegroundColor Green
-    Write-Host "  ◉ ORB  ONLINE" -ForegroundColor Green
-}
+Write-Host "  J A R V I S" -NoNewline -ForegroundColor Green
+Write-Host "  ◉ ORB" -ForegroundColor Green
 Write-Host ""
 Write-Host "  I N S T A L L E D" -ForegroundColor Green
 Write-Host ""
