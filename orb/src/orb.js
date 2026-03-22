@@ -344,17 +344,48 @@ export function createOrb(canvas) {
   function resetToIdle() {
     currentAnimation = 'idle';
     targets.scale = 1.0;
-    targets.displacement = 0.08;
-    targets.glowIntensity = 0.3;
     targets.alertMix = 0.0;
     targets.bloomStrength = 0.12;
-    uniforms.uColor1.value.set(0x4A9EBF);
-    uniforms.uColor2.value.set(0x6B4FA0);
+    const c = isConnected ? connectedColors : disconnectedColors;
+    uniforms.uColor1.value.copy(c.color1);
+    uniforms.uColor2.value.copy(c.color2);
+    uniforms.uGlowColor.value.copy(c.glowColor);
+    targets.displacement = isConnected ? 0.08 : 0.03;
+    targets.glowIntensity = isConnected ? 0.3 : 0.1;
     subOrbs.forEach(s => { s.visible = false; });
   }
 
+  // Disconnected state targets
+  const disconnectedColors = {
+    color1: new THREE.Color(0x555566),
+    color2: new THREE.Color(0x444455),
+    glowColor: new THREE.Color(0x556677),
+  };
+  const connectedColors = {
+    color1: new THREE.Color(0x4A9EBF),
+    color2: new THREE.Color(0x6B4FA0),
+    glowColor: new THREE.Color(0x5BB8D4),
+  };
+  let isConnected = false;
+
+  function setConnected(connected) {
+    isConnected = connected;
+    const c = connected ? connectedColors : disconnectedColors;
+    if (!currentAnimation || currentAnimation === 'idle') {
+      uniforms.uColor1.value.copy(c.color1);
+      uniforms.uColor2.value.copy(c.color2);
+      uniforms.uGlowColor.value.copy(c.glowColor);
+      targets.glowIntensity = connected ? 0.3 : 0.1;
+      targets.displacement = connected ? 0.08 : 0.03;
+    }
+  }
+
+  // Start in disconnected state
+  setConnected(false);
+
   return {
     animate,
+    setConnected,
     triggerAnimation(type) {
       currentAnimation = type;
       animationTime = 2.5;

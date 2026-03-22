@@ -1,1 +1,1 @@
-{"default":{"identifier":"default","description":"Default capabilities for Jarvis Orb","local":true,"windows":["main"],"permissions":["core:window:allow-start-dragging","core:window:allow-set-position","core:window:allow-outer-position","core:window:allow-set-focus"]}}
+{"default":{"identifier":"default","description":"Default capabilities for Jarvis Orb","local":true,"windows":["main"],"permissions":["core:window:allow-start-dragging","core:window:allow-set-position","core:window:allow-outer-position","core:window:allow-set-focus","core:window:allow-close"]}}

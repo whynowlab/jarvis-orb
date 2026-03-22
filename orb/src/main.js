@@ -15,30 +15,45 @@ const appWindow = getCurrentWindow();
 
 dragRegion.addEventListener('mousedown', async (e) => {
   if (e.detail === 2) {
-    // Double click → toggle log
     logPanel.toggle();
     return;
   }
-  // Single click → start drag
   await appWindow.startDragging();
 });
 
-// Keyboard demo (for development)
-document.addEventListener('keydown', (e) => {
-  const demoEvents = {
-    '1': { type: 'memory_save', label: '결정: SQLite 유지', tier: 'semantic' },
-    '2': { type: 'memory_contradict', label: '모순 감지: 이전 기억과 충돌' },
-    '3': { type: 'entity_update', label: 'jarvis-brain: planning → implementing' },
-    '4': { type: 'team_dispatch', label: 'strategy 팀 3명 투입' },
-    '5': { type: 'team_result', label: '팀 결과 수신: CONDITIONAL GO' },
-    '6': { type: 'context_compact', label: '컨텍스트 73% → 압축 실행' },
-    '7': { type: 'session_start', label: 'Session initialized' },
-    '8': { type: 'search', label: '메모리 검색: "auth module"' },
-    '0': { type: 'idle', label: 'Idle' },
-  };
-  if (demoEvents[e.key]) {
-    bridge.handleEvent(demoEvents[e.key]);
-  }
+// Resize handling
+window.addEventListener('resize', () => {
+  orb.resize(window.innerWidth, window.innerHeight);
+});
+
+// Context menu
+const ctxMenu = document.getElementById('ctx-menu');
+const ctxStatus = document.getElementById('ctx-status');
+
+dragRegion.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  ctxStatus.textContent = bridge.connected ? '● Brain Connected' : '○ Brain Disconnected';
+  ctxStatus.className = 'ctx-item ctx-status ' + (bridge.connected ? 'connected' : 'disconnected');
+  ctxMenu.style.left = Math.min(e.clientX, window.innerWidth - 160) + 'px';
+  ctxMenu.style.top = Math.min(e.clientY, window.innerHeight - 140) + 'px';
+  ctxMenu.classList.add('visible');
+});
+
+document.addEventListener('click', () => {
+  ctxMenu.classList.remove('visible');
+});
+
+document.getElementById('ctx-log').addEventListener('click', () => {
+  logPanel.toggle();
+});
+
+document.getElementById('ctx-reset-pos').addEventListener('click', async () => {
+  const { LogicalPosition } = await import('@tauri-apps/api/dpi');
+  await appWindow.setPosition(new LogicalPosition(50, 50));
+});
+
+document.getElementById('ctx-quit').addEventListener('click', async () => {
+  await appWindow.close();
 });
 
 // WebSocket connection (optional — for Brain Lite)

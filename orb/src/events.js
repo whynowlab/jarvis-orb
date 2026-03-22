@@ -6,14 +6,23 @@ export class EventBridge {
     this.orb = orb;
     this.logPanel = logPanel;
     this.ws = null;
+    this.connected = false;
     this.reconnectInterval = 3000;
+    this._firstConnect = true;
+    this._indicator = document.getElementById('connection-indicator');
+  }
+
+  _setConnected(state) {
+    this.connected = state;
+    this.orb.setConnected(state);
+    if (this._indicator) {
+      this._indicator.className = 'indicator ' + (state ? 'connected' : 'disconnected');
+    }
   }
 
   handleEvent(event) {
-    // Trigger orb animation
     this.orb.triggerAnimation(event.type);
 
-    // Add to log
     const tagMap = {
       memory_save: 'MEMORY',
       memory_contradict: 'ALERT',
@@ -34,8 +43,15 @@ export class EventBridge {
       this.ws = new WebSocket(url);
 
       this.ws.onopen = () => {
-        console.log('[Orb] Connected to Brain');
+        this._setConnected(true);
         this.logPanel.addLine('SYSTEM', 'Connected to Jarvis Brain');
+
+        // First connection: briefly show log panel so user knows it exists
+        if (this._firstConnect) {
+          this._firstConnect = false;
+          this.logPanel.show();
+          setTimeout(() => this.logPanel.hide(), 3000);
+        }
       };
 
       this.ws.onmessage = (msg) => {
@@ -48,16 +64,13 @@ export class EventBridge {
       };
 
       this.ws.onclose = () => {
-        console.log('[Orb] Disconnected. Reconnecting...');
+        this._setConnected(false);
         setTimeout(() => this.connectWebSocket(url), this.reconnectInterval);
       };
 
-      this.ws.onerror = () => {
-        // Silent — will reconnect on close
-      };
+      this.ws.onerror = () => {};
     } catch (e) {
-      // WebSocket not available (demo mode)
-      console.log('[Orb] Running in standalone mode');
+      this._setConnected(false);
     }
   }
 }

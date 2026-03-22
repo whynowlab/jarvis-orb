@@ -13,6 +13,16 @@ export class LogPanel {
     this.el.classList.toggle('visible', this.visible);
   }
 
+  show() {
+    this.visible = true;
+    this.el.classList.add('visible');
+  }
+
+  hide() {
+    this.visible = false;
+    this.el.classList.remove('visible');
+  }
+
   addLine(tag, text) {
     const line = document.createElement('div');
     line.className = 'log-line';

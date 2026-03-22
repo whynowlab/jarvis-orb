@@ -42,12 +42,78 @@
     }
     .log-line:last-child { color: #fff; }
     .log-tag { color: #00F0FF; font-weight: bold; margin-right: 6px; }
+
+    /* Connection indicator */
+    .indicator {
+      position: fixed;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      z-index: 5;
+      transition: background 0.5s ease, box-shadow 0.5s ease;
+    }
+    .indicator.connected {
+      background: #4ADE80;
+      box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+    }
+    .indicator.disconnected {
+      background: #666;
+      box-shadow: none;
+    }
+
+    /* Context menu */
+    #ctx-menu {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      min-width: 150px;
+      background: rgba(20, 20, 28, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 4px 0;
+      backdrop-filter: blur(12px);
+      font-size: 11px;
+    }
+    #ctx-menu.visible { display: block; }
+    .ctx-item {
+      padding: 6px 12px;
+      color: rgba(200, 200, 220, 0.9);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .ctx-item:hover { background: rgba(255, 255, 255, 0.06); }
+    .ctx-status {
+      cursor: default;
+      font-weight: bold;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 8px;
+      margin-bottom: 2px;
+    }
+    .ctx-status:hover { background: transparent; }
+    .ctx-status.connected { color: #4ADE80; }
+    .ctx-status.disconnected { color: #888; }
+    .ctx-separator {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.06);
+      margin: 2px 0;
+    }
   </style>
 </head>
 <body>
   <div id="drag-region" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:2;-webkit-app-region:drag;"></div>
   <canvas id="orb-canvas" style="position:relative;z-index:1;"></canvas>
+  <div id="connection-indicator" class="indicator disconnected"></div>
   <div id="log-panel"></div>
+  <div id="ctx-menu">
+    <div id="ctx-status" class="ctx-item ctx-status disconnected">○ Brain Disconnected</div>
+    <div id="ctx-log" class="ctx-item">Log Show/Hide</div>
+    <div id="ctx-reset-pos" class="ctx-item">Reset Position</div>
+    <div class="ctx-separator"></div>
+    <div id="ctx-quit" class="ctx-item">Quit</div>
+  </div>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
