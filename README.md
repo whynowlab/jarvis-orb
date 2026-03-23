@@ -45,6 +45,8 @@ Every session, your AI starts over. Your decisions, your preferences, your proje
 
 **Jarvis Orb** gives your AI a persistent brain and shows its thought process as a living orb on your desktop.
 
+[![jarvis-orb MCP server](https://glama.ai/mcp/servers/whynowlab/jarvis-orb/badges/card.svg)](https://glama.ai/mcp/servers/whynowlab/jarvis-orb)
+
 | | Without Jarvis Orb | With Jarvis Orb |
 |---|---|---|
 | **Context** | Every session starts from zero | Carries over automatically |
