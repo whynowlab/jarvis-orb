@@ -11,7 +11,7 @@
 
 <br><br>
 
-# Jarvis Orb
+# Jarvis Orb — Persistent Memory MCP Server + AI Brain Visualizer
 
 ### Not a tool. A presence.
 
