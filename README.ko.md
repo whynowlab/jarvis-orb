@@ -12,10 +12,10 @@
 
 <br><br>
 
-[![GitHub Stars](https://img.shields.io/github/stars/whynowlab/jarvis-orb?style=flat&color=4A9EBF)](https://github.com/whynowlab/jarvis-orb/stargazers)
-[![Release](https://img.shields.io/github/v/release/whynowlab/jarvis-orb?color=6B4FA0)](https://github.com/whynowlab/jarvis-orb/releases)
+[![GitHub Stars](https://img.shields.io/github/stars/thestack-ai/jarvis-orb?style=flat&color=4A9EBF)](https://github.com/thestack-ai/jarvis-orb/stargazers)
+[![Release](https://img.shields.io/github/v/release/thestack-ai/jarvis-orb?color=6B4FA0)](https://github.com/thestack-ai/jarvis-orb/releases)
 [![License](https://img.shields.io/badge/license-MIT-white)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-white)](https://github.com/whynowlab/jarvis-orb/releases)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-white)](https://github.com/thestack-ai/jarvis-orb/releases)
 
 [English](README.md) | **한국어**
 
@@ -35,15 +35,15 @@
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thestack-ai/jarvis-orb/main/install.sh | bash
 ```
 
 **Windows (PowerShell):**
 ```powershell
-irm https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/thestack-ai/jarvis-orb/main/install.ps1 | iex
 ```
 
-**직접 다운로드** → [최신 릴리스](https://github.com/whynowlab/jarvis-orb/releases/latest)
+**직접 다운로드** → [최신 릴리스](https://github.com/thestack-ai/jarvis-orb/releases/latest)
 
 설치하면 끝. Brain이 시작되고, Orb가 뜨고, Claude Code가 연결됩니다.
 
@@ -122,7 +122,7 @@ PR 환영합니다. [CONTRIBUTING.md](CONTRIBUTING.md)를 참고하세요.
 
 ```bash
 # 개발 환경
-git clone https://github.com/whynowlab/jarvis-orb.git
+git clone https://github.com/thestack-ai/jarvis-orb.git
 cd jarvis-orb
 
 # Brain
@@ -148,6 +148,6 @@ MIT
 
 <br>
 
-[설치](https://github.com/whynowlab/jarvis-orb/releases/latest) · [랜딩 페이지](https://jarvis-orb.vercel.app) · [버그 리포트](https://github.com/whynowlab/jarvis-orb/issues)
+[설치](https://github.com/thestack-ai/jarvis-orb/releases/latest) · [랜딩 페이지](https://jarvis-orb.vercel.app) · [버그 리포트](https://github.com/thestack-ai/jarvis-orb/issues)
 
 </div>

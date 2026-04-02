@@ -5,7 +5,7 @@ Thanks for your interest in contributing!
 ## Getting Started
 
 ```bash
-git clone https://github.com/whynowlab/jarvis-orb.git
+git clone https://github.com/thestack-ai/jarvis-orb.git
 cd jarvis-orb
 ```
 
@@ -35,7 +35,7 @@ pnpm tauri dev
 
 ## Reporting Bugs
 
-Open an issue at [GitHub Issues](https://github.com/whynowlab/jarvis-orb/issues) with:
+Open an issue at [GitHub Issues](https://github.com/thestack-ai/jarvis-orb/issues) with:
 - Steps to reproduce
 - Expected vs actual behavior
 - OS and Python version

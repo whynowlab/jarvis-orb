@@ -3,8 +3,8 @@
 <br>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/assets/demo.gif">
-  <img src="https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/assets/demo.gif" alt="Jarvis Orb" width="280">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/thestack-ai/jarvis-orb/main/assets/demo.gif">
+  <img src="https://raw.githubusercontent.com/thestack-ai/jarvis-orb/main/assets/demo.gif" alt="Jarvis Orb" width="280">
 </picture>
 
 <sub>Actual footage. Not a mockup.</sub>
@@ -19,13 +19,13 @@
 
 <br>
 
-[![Stars](https://img.shields.io/github/stars/whynowlab/jarvis-orb?style=flat&color=4A9EBF&label=Stars)](https://github.com/whynowlab/jarvis-orb/stargazers)
-[![Release](https://img.shields.io/github/v/release/whynowlab/jarvis-orb?color=6B4FA0&label=Release)](https://github.com/whynowlab/jarvis-orb/releases)
+[![Stars](https://img.shields.io/github/stars/thestack-ai/jarvis-orb?style=flat&color=4A9EBF&label=Stars)](https://github.com/thestack-ai/jarvis-orb/stargazers)
+[![Release](https://img.shields.io/github/v/release/thestack-ai/jarvis-orb?color=6B4FA0&label=Release)](https://github.com/thestack-ai/jarvis-orb/releases)
 [![License](https://img.shields.io/badge/License-MIT-white)](LICENSE)
 [![macOS](https://img.shields.io/badge/macOS-ready-white)]()
 [![Windows](https://img.shields.io/badge/Windows-ready-white)]()
 
-[Website](https://jarvis-brain-visualizer.vercel.app) · [Download](https://github.com/whynowlab/jarvis-orb/releases/latest) · [Report Bug](https://github.com/whynowlab/jarvis-orb/issues)
+[Website](https://jarvis-brain-visualizer.vercel.app) · [Download](https://github.com/thestack-ai/jarvis-orb/releases/latest) · [Report Bug](https://github.com/thestack-ai/jarvis-orb/issues)
 
 **English** | [한국어](README.ko.md)
 
@@ -45,7 +45,7 @@ Every session, your AI starts over. Your decisions, your preferences, your proje
 
 **Jarvis Orb** gives your AI a persistent brain and shows its thought process as a living orb on your desktop.
 
-[![jarvis-orb MCP server](https://glama.ai/mcp/servers/whynowlab/jarvis-orb/badges/card.svg)](https://glama.ai/mcp/servers/whynowlab/jarvis-orb)
+[![jarvis-orb MCP server](https://glama.ai/mcp/servers/thestack-ai/jarvis-orb/badges/card.svg)](https://glama.ai/mcp/servers/thestack-ai/jarvis-orb)
 
 | | Without Jarvis Orb | With Jarvis Orb |
 |---|---|---|
@@ -58,14 +58,14 @@ Every session, your AI starts over. Your decisions, your preferences, your proje
 
 **macOS (Apple Silicon) / Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thestack-ai/jarvis-orb/main/install.sh | bash
 ```
 
 > Requires Apple Silicon (M1/M2/M3/M4). Use the terminal command above for the smoothest install experience.
 
 **Windows (PowerShell):**
 ```powershell
-irm https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/thestack-ai/jarvis-orb/main/install.ps1 | iex
 ```
 
 That's it. Brain starts. Orb floats. Claude Code connects.
@@ -218,7 +218,7 @@ Jarvis Orb was extracted from a working AI control plane — **Jarvis** — runn
 PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
-git clone https://github.com/whynowlab/jarvis-orb.git
+git clone https://github.com/thestack-ai/jarvis-orb.git
 cd jarvis-orb
 
 # Brain
@@ -242,7 +242,7 @@ MIT
 
 **Your AI will start remembering.**
 
-[Website](https://jarvis-brain-visualizer.vercel.app) · [Download](https://github.com/whynowlab/jarvis-orb/releases/latest) · [GitHub](https://github.com/whynowlab/jarvis-orb)
+[Website](https://jarvis-brain-visualizer.vercel.app) · [Download](https://github.com/thestack-ai/jarvis-orb/releases/latest) · [GitHub](https://github.com/thestack-ai/jarvis-orb)
 
 <br>
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Jarvis Orb — Installer
-# curl -fsSL https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.sh | bash
+# curl -fsSL https://raw.githubusercontent.com/thestack-ai/jarvis-orb/main/install.sh | bash
 
 set -e
 
@@ -15,7 +15,7 @@ RED='\033[31m'
 WHITE='\033[97m'
 HOLO='\033[38;2;142;228;255m'
 
-REPO="whynowlab/jarvis-orb"
+REPO="thestack-ai/jarvis-orb"
 VERSION="0.3.3"
 BRAIN_DIR="$HOME/.jarvis-orb"
 BRAIN_BIN="$BRAIN_DIR/bin"

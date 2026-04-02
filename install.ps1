@@ -1,9 +1,9 @@
 # Jarvis Orb — Windows Installer (PowerShell)
-# Usage: irm https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.ps1 | iex
+# Usage: irm https://raw.githubusercontent.com/thestack-ai/jarvis-orb/main/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 $Version = "0.3.3"
-$Repo = "whynowlab/jarvis-orb"
+$Repo = "thestack-ai/jarvis-orb"
 $BrainDir = "$env:USERPROFILE\.jarvis-orb"
 $BrainBin = "$BrainDir\bin"
 

@@ -152,7 +152,7 @@ def run_doctor():
         print(f"  \033[32mAll {ok_count} checks passed.\033[0m")
     else:
         print(f"  \033[32m{ok_count} passed\033[0m, \033[31m{fail_count} failed\033[0m")
-        print(f"  \033[2mRe-run installer: curl -fsSL https://raw.githubusercontent.com/whynowlab/jarvis-orb/main/install.sh | bash\033[0m")
+        print(f"  \033[2mRe-run installer: curl -fsSL https://raw.githubusercontent.com/thestack-ai/jarvis-orb/main/install.sh | bash\033[0m")
     print()
 
 
